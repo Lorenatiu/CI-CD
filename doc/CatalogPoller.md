@@ -4,7 +4,7 @@ For scenarios where the catalog service binaries or configuration cannot be chan
 
 This poller comes under the form of an Azure function that can be set to periodically check for new revisions saved to the catalog service at which it is pointed.  With this configuration, no artifacts are required on the catalog service instance, while the CI/CD service is still required for processing.  At this time, out of all the possible catalog service events, only check-ins are being tracked when using the poller.
 
-![CI/CD Architecture with SaaS](images/InRuleCICD_SaaS_arch.png)
+![CI/CD Architecture with SaaS](../images/InRuleCICD_SaaS_arch.png)
 
 The catalog poller is a proxy between the catalog service generating the events and the CI/CD service handling them.  Therefore, the poller has a dependency on having both these services installed and configured in Azure.
 
