@@ -14,7 +14,7 @@ This capability is supported by support@inrule.com.  Issues and requests will be
 ## InRule CI/CD Architecture
 What is this and how does it work?  irCatalog emits many lifecycle events (check-in, check-out, etc.).  When irAuthor® or Author Studio™ interacts with irCatalog, events emit from the messages inbound through the service endpoint.  This capability is responsible for intercepting those events and passing them along to the appropriate component for processing and automation.  In some cases, an event can be blocked while waiting for an approval (setting a label for example).  
 
-#### The InRule CI/CD solution is comprised of three major components
+#### The InRule CI/CD solution is comprised of four major components
 * *WCF listener binaries and configuration* for the instance of irCatalog service to which we want to apply the CI/CD runtime enhancements.
 
 * *InRule CI/CD service* that can be hosted in Azure, as an app service, or on-premise.  Depending on the chosen deployment configuration, the InRule CI/CD service can either handle all the events and actions or only be used for a number of on demand services, such as generating a rule application report or facilitating the approval of a label assignment.
@@ -22,6 +22,10 @@ What is this and how does it work?  irCatalog emits many lifecycle events (check
 ![CI/CD Architecture](images/InRuleCICD_arch.png)
 
 * *Event processors*.  The default CI/CD installation comes with a number of built-in integrations that can be enabled and configured on a per installation basis: Slack, Email (SendGrid), Windows/Azure EventLog, SQL Server database, Azure AppInsights, Azure Service Bus, Azure Event Grid, Azure DevOps pipeline, GitHub, Box.com.
+
+* *Catalog poller* for CI/CD architecture with SaaS. This is an Azure function that runs on a schedule and checks for new revisions checked into the catalog service at which it is pointed.  The poller is useful when the catalog service's binaries and configuration are not accessible to be enhanced with the CI/CD artifacts. It picks up check in event details from the catalog service and sends them to the InRule CI/CD service.
+
+![CI/CD Architecture with SaaS](images/InRuleCICD_SaaS_arch.png)
 
 
 * Other than the ability to post captured catalog events to the various subscribers/consumers listed above, **the InRule CI/CID solution includes a number of services and actions** relevant to a rule application life cycle in the enterprise:
@@ -39,6 +43,7 @@ What is this and how does it work?  irCatalog emits many lifecycle events (check
 * irCatalog - [Local deployment](doc/ircatalog-local.md) or [in Azure](doc/ircatalog-azure.md)
 * [Enable WCF Listener](doc/InRuleCICD_WcfBehaviorExtension.md)
 * [InRule CI/CD app service](doc/InRuleCICDService.md)
+  [CI/CD Architecture with SaaS / InRule Catalog Poller](doc/CatalogPoller.md)
 * [Orchestration by Configuration](doc/OrchestrationByConfiguration.md)
 * [Understanding and using notifications](doc/Notifications.md)
 * [Slack integration](doc/InRuleCICD_Slack.md)

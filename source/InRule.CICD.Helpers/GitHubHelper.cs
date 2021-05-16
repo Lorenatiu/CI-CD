@@ -59,17 +59,6 @@ namespace InRule.CICD.Helpers
 
                 var url = $"https://api.github.com/repos/{GitHubRepo}/contents/{GitHubFolder}";
 
-
-                //using (var client = new System.Net.Http.HttpClient())
-                //{
-                //    var credentials = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:", gitHubToken);
-                //    credentials = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
-                //    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
-                //    var contents1 = client.GetByteArrayAsync(url).Result;
-                //    System.IO.File.WriteAllBytes(path, contents1);
-                //}
-
-
                 var contentsJson = await httpClient.GetStringAsync(url);
 
                 var contents = (JArray)JsonConvert.DeserializeObject(contentsJson);
@@ -92,8 +81,6 @@ namespace InRule.CICD.Helpers
                             client.DownloadFile(downloadUrl, Path.Combine(GitHubDownloadPath, (string)file["name"]));
                             await NotificationHelper.NotifyAsync($"Download {(string)file["name"]}.", Prefix, "Debug");
                         }
-                        // use this URL to download the contents of the file
-                        //Console.WriteLine($"DOWNLOAD: {downloadUrl}");
                     }
                 }
                 await NotificationHelper.NotifyAsync($"Downloaded {fileExtension} files from {GitHubRepo} to {GitHubDownloadPath}.", Prefix, "Debug");
@@ -130,29 +117,70 @@ namespace InRule.CICD.Helpers
                 {
                     client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GitHubProductName, GitHubProductVersion));
                     var credentials = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:", GitHubToken);
-                    credentials = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
-                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+                    credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(credentials));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
                     var bytes = Encoding.ASCII.GetBytes(fileContent);
                     var base64 = Convert.ToBase64String(bytes);
 
-                    var stringContent = new StringContent("{\"message\":\"Saved by InRule CI/CD.\",\"content\":\"" + base64 + "\"}",
+                    var sha = GetExistingFileSHA(fileName, moniker).Result;
+                    if (sha.Length > 0)
+                        sha = ",\"sha\":" + "\"" + sha + "\"";
+                    var stringContent = new StringContent("{\"message\":\"Saved by InRule CI/CD.\"" + sha + ",\"content\":\"" + base64 + "\"}",
                         Encoding.UTF8, "application/json");
                     var response = await client.PutAsync(url + "/" + fileName, stringContent);
-
-
 
                     dynamic d = JObject.Parse(response.Content.ReadAsStringAsync().Result);
 
                     await NotificationHelper.NotifyAsync($"Uploaded file to {GitHubRepo}", Prefix, "Debug");
                     return d.content.download_url;
-                    //var contents1 = client.GetByteArrayAsync(url).Result;
-                    //System.IO.File.WriteAllBytes(path, contents1);
                 }
             }
             catch (Exception ex)
             {
                 await NotificationHelper.NotifyAsync($"Error uploading {fileName} file to {GitHubRepo}.\r\n" + ex.Message, Prefix, "Debug");
+            }
+
+            return string.Empty;
+        }
+
+        public static async Task<string> GetExistingFileSHA(string fileName, string moniker)
+        {
+            string GitHubRepo = SettingsManager.Get($"{moniker}.GitHubRepo");
+            string GitHubFolder = SettingsManager.Get($"{moniker}.GitHubFolder");
+            string GitHubProductName = SettingsManager.Get($"{moniker}.GitHubProductName");
+            string GitHubProductVersion = SettingsManager.Get($"{moniker}.GitHubProductVersion");
+            string GitHubToken = SettingsManager.Get($"{moniker}.GitHubToken");
+
+            if (GitHubRepo.Length == 0 || GitHubProductName.Length == 0 || GitHubProductVersion.Length == 0)
+                return string.Empty;
+
+            try
+            {
+                var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GitHubProductName, GitHubProductVersion));
+
+                var url = $"https://api.github.com/repos/{GitHubRepo}/contents/{GitHubFolder}";
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GitHubProductName, GitHubProductVersion));
+                    var credentials = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:", GitHubToken);
+                    credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(credentials));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+
+                    var response = await client.GetAsync(url + "/" + fileName);
+
+                    dynamic d = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+
+                    if (d.sha != null)
+                        return d.sha;
+                }
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                await NotificationHelper.NotifyAsync($"Error checking SHA for {fileName} file to {GitHubRepo}.\r\n" + ex.Message, Prefix, "Debug");
             }
 
             return string.Empty;

@@ -23,7 +23,6 @@ namespace InRule.CICD
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class Service : IService
     {
-        //public IAsyncResult BeginGetRuleAppReport(string ruleAppXml, AsyncCallback callback, object asyncState)
         public Stream GetRuleAppReport(Stream data)
         {
             string fileFullPath = GetRuleAppReportFile(data);
@@ -71,13 +70,6 @@ namespace InRule.CICD
             return fileInfo.FullName;
         }
 
-        //public string EndGetRuleAppReport(IAsyncResult r)
-        //{
-        //    CompletedAsyncResult<string> result = r as CompletedAsyncResult<string>;
-        //    Console.WriteLine("EndServiceAsyncMethod called with: \"{0}\"", result.Data);
-        //    return result.Data;
-        //}
-
         public Stream GetRuleAppDiffReport(Stream data)
         {
             string fileFullPath = GetRuleAppDiffReportFile(data);
@@ -101,7 +93,6 @@ namespace InRule.CICD
             mem.Dispose();
 
             var downloadGitHubLink = GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm").Result;
-            //SlackHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from GitHub", fileName, downloadGitHubLink, "RULEAPP DIFF REPORT - ");
 
             return downloadGitHubLink;
         }
@@ -145,13 +136,14 @@ namespace InRule.CICD
             string ruleAppGuid = string.Empty;
             string repositoryUri = string.Empty;
             string revision = string.Empty;
+            string approvalFlowMoniker = string.Empty;
+            string message = string.Empty;
+
             try
             {
                 data = data.Replace(" ", "+");
 
                 var eventDataString = CryptoHelper.DecryptString(string.Empty, data);
-
-                //var eventData = (IDictionary<string, object>)((dynamic)eventDataString); //JsonConvert.DeserializeObject<ExpandoObject>(eventDataString);
 
                 var obj = JsonConvert.DeserializeObject(eventDataString);
                 var jObj = obj as JArray;
@@ -172,13 +164,43 @@ namespace InRule.CICD
                     if (item["Key"].ToString() == "GUID")
                         ruleAppGuid = item["Value"].ToString();
 
+                    if (item["Key"].ToString() == "ApprovalFlowMoniker")
+                        approvalFlowMoniker = item["Value"].ToString();
                 }
+
+                message = $"Label {label} has been approved by user{(SettingsManager.Get($"{approvalFlowMoniker}.ApplyLabelApprover").Split(' ').Length > 1 ? "s " : " ")}{SettingsManager.Get($"{approvalFlowMoniker}.ApplyLabelApprover")}.";
 
                 using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"))) // SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
                 {
                     var ruleAppDef = connection.GetSpecificRuleAppRevision(new Guid(ruleAppGuid), int.Parse(revision));
 
-                    connection.ApplyLabel(ruleAppDef, label);
+                    if (connection.DoesLabelExist("PENDING " + int.Parse(revision).ToString()))
+                    {
+                        connection.RemoveLabel(new Guid(ruleAppGuid), int.Parse(revision), "PENDING " + int.Parse(revision));
+                        connection.ApplyLabel(ruleAppDef, label);
+
+                        var requesterChannels = SettingsManager.Get($"{approvalFlowMoniker}.RequesterNotificationChannel").Split(' ');
+                        foreach (var channel in requesterChannels)
+                        {
+
+                            switch (SettingsManager.GetHandlerType(channel))
+                            {
+                                case IHelper.InRuleEventHelperType.Teams:
+                                    TeamsHelper.PostSimpleMessage(message, "APPROVAL FLOW", channel);
+                                    break;
+                                case IHelper.InRuleEventHelperType.Slack:
+                                    SlackHelper.PostMarkdownMessage(message, "APPROVAL FLOW", channel);
+                                    break;
+                                case IHelper.InRuleEventHelperType.Email:
+                                    SendGridHelper.SendEmail("APPLY LABEL REQUEST APPROVED", message, "", channel).Wait();
+                                    break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return "ERROR APPLYING LABEL: This link has been used already.";
+                    }
                 }
             }
             catch (Exception ex)
@@ -186,7 +208,6 @@ namespace InRule.CICD
                 return "ERROR APPLYING LABEL: " + ex.Message;
             }
             return "SUCCESS!";
-            //return jObj[0]["Key"].ToString() + " " + jObj[0]["Value"].ToString();
         }
 
         public Stream ProcessInRuleEvent(Stream data)
@@ -194,16 +215,26 @@ namespace InRule.CICD
             StreamReader reader = new StreamReader(data);
             string request = reader.ReadToEnd();
             dynamic eventDataSource = JsonConvert.DeserializeObject<ExpandoObject>(request, new ExpandoObjectConverter());
+            var requestData = (IDictionary<string, object>)eventDataSource;
 
-            try
+            object encryptedData = null;
+            if (requestData.TryGetValue("data", out encryptedData))
             {
-                HandleAfterCallAsync(eventDataSource);
-            }
-            catch(Exception ex)
-            {
-                return new MemoryStream(Encoding.UTF8.GetBytes(ex.Message));
-            }
+                var eventDataString = encryptedData.ToString().Replace(" ", "+");
+                eventDataString = CryptoHelper.DecryptString("", eventDataString).Replace("InRule CI/CD - ", "");
 
+                var jsonDeserialized = new JavaScriptSerializer().Deserialize<IEnumerable<IDictionary<string, object>>>(eventDataString);
+                var eventData = go(jsonDeserialized);
+
+                try
+                {
+                    HandleAfterCallAsync(eventData);
+                }
+                catch (Exception ex)
+                {
+                    return new MemoryStream(Encoding.UTF8.GetBytes(ex.Message));
+                }
+            }
             return new MemoryStream(Encoding.UTF8.GetBytes(request));
         }
 
@@ -240,21 +271,12 @@ namespace InRule.CICD
 
         private void HandleAfterCallAsync(ExpandoObject eventDataSource) //, object returnValue)
         {
-            //var processingTask = Task.Run(() =>
-            //{
-                try
-                {
-                //dynamic eventData = new ExpandoObject();
-                //var d = eventData as IDictionary<string, object>;
-
+            try
+            {
                 string FilterByUser = SettingsManager.Get("FilterEventsByUser").ToLower();
-                //string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
                 string ApplyLabelApprover = SettingsManager.Get("ApprovalFlow.ApplyLabelApprover");
-                //var eventData = (dynamic)JsonConvert.SerializeObject(eventDataSource);
                 var eventData = (dynamic)eventDataSource;
-                //if (eventData.RequestorUsername.ToString().ToLower() != FilterByUser)
-                //    return;
-
+                var ruleAppXml = string.Empty;
                 var filterByUsers = FilterByUser.Split(' ').ToList();
 
                 if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
@@ -262,115 +284,15 @@ namespace InRule.CICD
 
                 eventData.ProcessingTimeInMs = (DateTime.UtcNow - ((DateTime)eventData.UtcTimestamp)).TotalMilliseconds;
 
-                #region Try to retrieve the RuleApp Name from RuleAppXml or maintenance action result information
-                //string ruleAppXml = null;
-                //if (returnValue is CheckinRuleAppResponse checkinResponse)
-                //    ruleAppXml = checkinResponse.RuleAppXml.Xml;
-                //else if (returnValue is CreateRuleAppResponse createResponse)
-                //    ruleAppXml = createResponse.AppXml.Xml;
-                //else if (returnValue is DeleteRuleAppResponse deleteResponse)
-                //    ruleAppXml = deleteResponse.RuleAppXml.Xml;
-                //else if (returnValue is DeleteWorkspaceResponse deleteWorkspaceResponse)
-                //    ruleAppXml = deleteWorkspaceResponse.RuleAppXml.Xml;
-                //else if (returnValue is OverwriteRuleAppResponse overwriteResponse)
-                //    ruleAppXml = overwriteResponse.AppXml.Xml;
-                //else if (returnValue is PromoteRuleAppResponse promoteResponse)
-                //    ruleAppXml = promoteResponse.AppXml.Xml;
-                //else if (returnValue is RepairCatalogResponse repairResponse)
-                //    eventData.ResultData = JsonConvert.SerializeObject(repairResponse.Info);
-                //else if (returnValue is RunDiagnosticsResponse diagnosticResponse)
-                //    eventData.ResultData = JsonConvert.SerializeObject(diagnosticResponse.Info);
-                //else if (returnValue is SaveRuleAppResponse saveResponse)
-                //    ruleAppXml = saveResponse.RuleAppXml.Xml;
-                //else if (returnValue is UndoCheckoutResponse undoCheckoutResponse)
-                //    ruleAppXml = undoCheckoutResponse.RuleAppXml.Xml;
-                //else if (returnValue is UpdateStaleDefsResponse updateStaleDefsResponse)
-                //    ruleAppXml = updateStaleDefsResponse.AppXml.Xml;
-                //else if (returnValue is UpgradeCatalogRuleAppSchemaVersionResponse upgradeResponse)
-                //    eventData.ResultData = JsonConvert.SerializeObject(upgradeResponse.Info);
-                //else if (returnValue is UpgradeStatusResponse upgradeStatusResponse)
-                //    eventData.ResultData = JsonConvert.SerializeObject(upgradeStatusResponse.Status);
+                if (((IDictionary<String, object>)eventDataSource).ContainsKey("RuleAppXml"))
+                    ruleAppXml = eventData.RuleAppXml;
 
-                //if (ruleAppXml != null)
-                //    LoadRuleAppNameFromXml(eventData, ruleAppXml);
-                #endregion
-
-                InRuleEventHelper.ProcessEventAsync(eventData, string.Empty).Wait();
+                InRuleEventHelper.ProcessEventAsync(eventData, ruleAppXml).Wait();
                 return;
-
-                #region commented helpers actions
-                //// Output final event to desired listener(s)
-                //var eventDataJson = JsonConvert.SerializeObject(eventData);
-
-                ////eventData.RevisionComments = connection.GetCheckinHistoryForDef(ruleAppDef.Guid).Values.OfType<CheckinInfo>().FirstOrDefault().Comment;
-
-                //if (eventData.OperationName == "CheckinRuleApp" || eventData.OperationName == "OverwriteRuleApp" || eventData.OperationName == "CreateRuleApp")
-                //{
-                //    //var ruleAppDef = RuleApplicationDef.LoadXml(ruleAppXml);
-
-                //    RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(eventData.RepositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
-                //    var ruleAppDef = connection.GetSpecificRuleAppRevision(new System.Guid(eventData.GUID.ToString()), int.Parse(eventData.RuleAppRevision.ToString()));
-                //    //eventData.RuleAppRevision = ruleAppDef.Revision;
-
-                //    //AzureServiceBusHelper.SendMessageAsync(eventDataJson);
-
-                //    PublishEventHelper.WriteToSlack(eventData.OperationName, eventData, "CATALOG EVENT - ");
-                //    PublishEventHelper.WriteToEmailAsync(eventData.OperationName, eventData, " -");
-
-                //    InRuleReportingHelper.GetRuleAppReportAsync(eventData.OperationName, eventData, ruleAppDef, false, true, true);
-
-                //    if (ruleAppDef.Revision > 1)
-                //    {
-                //        var fromRuleAppDef = connection.GetSpecificRuleAppRevision(ruleAppDef.Guid, ruleAppDef.Revision - 1);
-                //        InRuleReportingHelper.GetRuleAppDiffReportAsync(eventData.OperationName, eventData, fromRuleAppDef, ruleAppDef, false, true, true);
-                //    }
-
-                //    //var comments = string.Empty;
-                //    //foreach(var checkIn in connection.GetCheckinHistoryForDef(ruleAppDef.Guid).Values)
-                //    //{
-                //    //    comments += checkIn.Comment + "\r\n";
-                //    //}
-
-                //    //eventData.RevisionComments = comments;
-
-                //    PublishEventHelper.WriteToEventGrid(eventData.OperationName, eventData);
-
-                //    PublishEventHelper.WriteToDevOpsPipeline(eventData.OperationName, eventData);
-
-                //    JavaDistributionHelper.GenerateJavaJar(ruleAppDef, true, false, true);
-
-                //    try
-                //    {
-                //        JavaScriptDistributionHelper.CallDistributionServiceAsync(ruleAppDef, true, false, true);
-                //    }
-                //    catch (Exception) { }
-
-                //    TestSuiteRunnerHelper.RunRegressionTestsAsync(eventData.OperationName, eventData, ruleAppDef);
-                //}
-                //else if(eventData.OperationName == "ApplyLabel")
-                //{
-                //    PublishEventHelper.WriteToSlack(eventData.OperationName, eventData, "CATALOG EVENT - ");
-                //    PublishEventHelper.WriteToEmailAsync(eventData.OperationName, eventData, " -");
-
-                //    if (eventData.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
-                //    {
-                //        CheckInApprovalHelper.SendApproveRequest(eventDataSource);
-                //    }
-                //}
-                //else
-                //{
-                //    PublishEventHelper.WriteToSlack(eventData.OperationName, eventData, "CATALOG EVENT - ");
-                //    PublishEventHelper.WriteToEmailAsync(eventData.OperationName, eventData, string.Empty);
-                //}
-
-                ////PublishEventToAppInsights(eventData.OperationName, eventData);
-                //WriteEventToEventLog(eventData.OperationName, eventData);
-                //WriteEventToDatabase(eventData.OperationName, eventData);
-                #endregion
             }
             catch (Exception ex)
             {
-                NotificationHelper.NotifyAsync("Error processing data in AfterCall: " + ex.Message, "AFTER CALL EVENT - ", "Debug").Wait();
+                NotificationHelper.NotifyAsync("Error processing data in AfterCall (CI/CD Service): " + ex.Message, "AFTER CALL EVENT - ", "Debug").Wait();
             }
             //});
         }

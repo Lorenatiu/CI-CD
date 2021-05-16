@@ -39,14 +39,14 @@ namespace InRule.CICD.Helpers
                                 Id = Guid.NewGuid().ToString(),
                                 EventType = $"InRule.Repository.{eventType}",
                                 Subject = eventType, //TODO: Consider including a config for EnvironmentName to include in the Subject
-                                Data = data,
+                                Data = Newtonsoft.Json.JsonConvert.SerializeObject(data),
                                 EventTime = ((dynamic)data).UtcTimestamp,
                                 DataVersion = "2.0"
                             }
                         };
 
                         client.PublishEventsAsync(new Uri(EventGridTopicEndpoint).Host, events).GetAwaiter().GetResult();
-                        await NotificationHelper.NotifyAsync(eventType + " - " + data.ToString(), moniker, "Debug");
+                        await NotificationHelper.NotifyAsync(eventType + " - " + Newtonsoft.Json.JsonConvert.SerializeObject(data), moniker, "Debug");
                     }
                 }
             }

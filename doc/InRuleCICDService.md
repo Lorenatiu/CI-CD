@@ -1,6 +1,6 @@
 # InRule CI/CD Service - Azure
 
-If you have not done so already, please read the [prerequisites](README.md#prerequisites) before you get started.
+If you have not done so already, please read the [prerequisites](deployment.md#prerequisites) before you get started.
 
 #### Deploying a new instance:
 

@@ -59,27 +59,8 @@ namespace CheckinRequestListener
                             thisEvent.GUID = appDef.Guid;
                             thisEvent.RuleAppRevision = appDef.Revision;
                             InRuleEventHelper.ProcessEventAsync(thisEvent, string.Empty);
-                            throw (new Exception($"USER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                            throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
                         }
-
-                        //appDef = applyLabelRequest.AppDef;
-                        //thisEvent.Label = applyLabelRequest.Label;
-                        //thisEvent.Revision = appDef.Revision;
-                        //thisEvent.RuleAppGuid = applyLabelRequest.AppDef.Guid;
-
-                        //if (thisEvent.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
-                        //{
-
-                        //    JavaScriptSerializer javaScriptSerializer = new JavaScriptSerializer();
-                        //    string applyLabelEvent = javaScriptSerializer.Serialize(thisEvent);
-                        //    string encryptedApplyLabelEvent = CryptoHelper.EncryptString(string.Empty, applyLabelEvent);
-
-                        //    var approvalUrl = $"{ApplyLabelApprovalUri}?data={encryptedApplyLabelEvent}";
-
-                        //    SlackHelper.PostMessageWithDownloadButton($"Click here to approve label {applyLabelRequest.Label} for rule application {applyLabelRequest.AppDef.Guid}", "Apply Label", approvalUrl, "APPROVAL FLOW - ");
-                        //    PublishEventToEmailAsync("APPROVE AND APPLY LABEL", thisEvent, "", $"Click <a href='{approvalUrl}'>here</a> to approve").Wait();
-                        //    throw (new Exception($"USER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
-                        //}
                     }
                     else if (input is CheckinRuleAppRequest checkingRuleAppRequest)
                     {
@@ -257,6 +238,8 @@ namespace CheckinRequestListener
                 try
                 {
                     var eventData = (dynamic)eventDataSource;
+                    //if (eventData.RequestorUsername.ToString().ToLower() != FilterByUser)
+                    //    return;
 
                     var filterByUsers = FilterByUser.Split(' ').ToList();
 

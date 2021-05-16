@@ -17,7 +17,7 @@ The CI/CD solution requires a number of binaries and configuration parameters to
 * [Add and Configure CI/CD Artifacts](#add-and-configure-cicd-artifacts)
 
 
-If you have not done so already, please read the [prerequisites](../README.md#prerequisites) before you get started.
+If you have not done so already, please read the [prerequisites](deployment.md#prerequisites) before you get started.
 
 ## Database Deployment
 

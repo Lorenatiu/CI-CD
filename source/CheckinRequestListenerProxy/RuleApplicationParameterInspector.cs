@@ -60,7 +60,7 @@ namespace CheckinRequestListener
                             thisEvent.GUID = appDef.Guid;
                             thisEvent.RuleAppRevision = appDef.Revision;
                             SendToCICDService(thisEvent);
-                            throw (new Exception($"USER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                            throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
                         }
                     }
                     else if (input is CheckinRuleAppRequest checkingRuleAppRequest)

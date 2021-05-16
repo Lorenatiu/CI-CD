@@ -15,6 +15,16 @@ namespace InRule.CICD.Helpers
             string UploadTo = SettingsManager.Get("RuleAppReport.UploadTo");
             try
             {
+                //string repositoryUri = System.ServiceModel.OperationContext.Current.RequestContext.RequestMessage.Headers.To.AbsoluteUri;
+                //RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), "Admin", "password");
+                //string url = "https://inrulechicago-my.sharepoint.com/personal/mdrumea_inrule_com";
+                //string url = SettingsManager.Get("SharepointUrl"); // "https://inrulechicago.sharepoint.com";
+                /// SharePoint Folder Relative Url
+                //string folderUrl = SettingsManager.Get("SharepointFolderUrl"); //"InRuleCICD";
+
+                //var fileUrl = OneDriveHelper.UploadRest(url, folderUrl, @"C:\Temp\BupaGlobalSchema.jar");
+                //Console.Write(fileUrl);
+
                 await NotificationHelper.NotifyAsync("Generating rule application report...", "RULEAPP REPORT", "Debug");
 
                 Encoding LocalEncoding = Encoding.UTF8;
@@ -28,7 +38,7 @@ namespace InRule.CICD.Helpers
                 string reportContent = LocalEncoding.GetString(mem.ToArray());
                 mem.Dispose();
 
-                var fileName = ((dynamic)data).Name + "_r" + ruleappDef.Revision.ToString();
+                var fileName = ruleappDef.Name + "_r" + ruleappDef.Revision.ToString() + ".htm";
 
                 var channels = NotificationChannel.Split(' ');
                 var uploadChannels = UploadTo.Split(' ');
@@ -42,12 +52,26 @@ namespace InRule.CICD.Helpers
                                 switch (SettingsManager.GetHandlerType(uploadChannel))
                                 {
                                     case IHelper.InRuleEventHelperType.Box:
-                                        var downloadLink = await BoxComHelper.UploadFile(fileName + ".htm", fileInfo.FullName, uploadChannel);
-                                        TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application report from Box.com", fileName, downloadLink, "RULEAPP REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadLink = await BoxComHelper.UploadFile(fileName, fileInfo.FullName, uploadChannel);
+                                            TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application report from Box.com", fileName, downloadLink, "RULEAPP REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading report to Box.com: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                     case IHelper.InRuleEventHelperType.GitHub:
-                                        var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm", uploadChannel);
-                                        TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application report from GitHub", fileName, downloadGitHubLink, "RULEAPP REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName, uploadChannel);
+                                            TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application report from GitHub", fileName, downloadGitHubLink, "RULEAPP REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading report to GitHub: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                 }
                             }
@@ -58,12 +82,26 @@ namespace InRule.CICD.Helpers
                                 switch (SettingsManager.GetHandlerType(uploadChannel))
                                 {
                                     case IHelper.InRuleEventHelperType.Box:
-                                        var downloadLink = await BoxComHelper.UploadFile(fileName + ".htm", fileInfo.FullName, uploadChannel);
-                                        SlackHelper.PostMessageWithDownloadButton("Click here to download rule application report from Box.com", fileName, downloadLink, "RULEAPP REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadLink = await BoxComHelper.UploadFile(fileName, fileInfo.FullName, uploadChannel);
+                                            SlackHelper.PostMessageWithDownloadButton("Click here to download rule application report from Box.com", fileName, downloadLink, "RULEAPP REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading report to Box.com: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                     case IHelper.InRuleEventHelperType.GitHub:
-                                        var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm", uploadChannel);
-                                        SlackHelper.PostMessageWithDownloadButton("Click here to download rule application report from GitHub", fileName, downloadGitHubLink, "RULEAPP REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName, uploadChannel);
+                                            SlackHelper.PostMessageWithDownloadButton("Click here to download rule application report from GitHub", fileName, downloadGitHubLink, "RULEAPP REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading report to GitHub: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                 }
                             }
@@ -86,6 +124,9 @@ namespace InRule.CICD.Helpers
             string UploadTo = SettingsManager.Get("RuleAppDiffReport.UploadTo");
             try
             {
+                //string repositoryUri = System.ServiceModel.OperationContext.Current.RequestContext.RequestMessage.Headers.To.AbsoluteUri;
+                //RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), "Admin", "password");
+
                 await NotificationHelper.NotifyAsync("Generating rule application difference report...", "RULEAPP DIFF REPORT", "Debug");
 
                 Encoding LocalEncoding = Encoding.UTF8;
@@ -100,7 +141,7 @@ namespace InRule.CICD.Helpers
                 string reportContent = LocalEncoding.GetString(mem.ToArray());
                 mem.Dispose();
 
-                var fileName = ((dynamic)data).Name + "_r" + fromRuleappDef.Revision.ToString() + "to_r" + toRuleappDef.Revision.ToString();
+                var fileName = fromRuleappDef.Name + "_r" + fromRuleappDef.Revision.ToString() + "to_r" + toRuleappDef.Revision.ToString() + ".htm";
 
                 var channels = NotificationChannel.Split(' ');
                 var uploadChannels = UploadTo.Split(' ');
@@ -114,12 +155,26 @@ namespace InRule.CICD.Helpers
                                 switch (SettingsManager.GetHandlerType(uploadChannel))
                                 {
                                     case IHelper.InRuleEventHelperType.Box:
-                                        var downloadLink = await BoxComHelper.UploadFile(fileName + ".htm", fileInfo.FullName);
-                                        TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from Box.com", fileName, downloadLink, "RULEAPP DIFF REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadLink = await BoxComHelper.UploadFile(fileName, fileInfo.FullName, uploadChannel);
+                                            TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from Box.com", fileName, downloadLink, "RULEAPP DIFF REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading difference report to Box.com: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                     case IHelper.InRuleEventHelperType.GitHub:
-                                        var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm", UploadTo);
-                                        TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from GitHub", fileName, downloadGitHubLink, "RULEAPP DIFF REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName, uploadChannel);
+                                            TeamsHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from GitHub", fileName, downloadGitHubLink, "RULEAPP DIFF REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading difference report to GitHub: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                 }
                             }
@@ -130,12 +185,26 @@ namespace InRule.CICD.Helpers
                                 switch (SettingsManager.GetHandlerType(uploadChannel))
                                 {
                                     case IHelper.InRuleEventHelperType.Box:
-                                        var downloadLink = await BoxComHelper.UploadFile(fileName + ".htm", fileInfo.FullName);
-                                        SlackHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from Box.com", fileName, downloadLink, "RULEAPP DIFF REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadLink = await BoxComHelper.UploadFile(fileName, fileInfo.FullName, uploadChannel);
+                                            SlackHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from Box.com", fileName, downloadLink, "RULEAPP DIFF REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading difference report to Box.com: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                     case IHelper.InRuleEventHelperType.GitHub:
-                                        var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm", UploadTo);
-                                        SlackHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from GitHub", fileName, downloadGitHubLink, "RULEAPP DIFF REPORT - ", channel);
+                                        try
+                                        {
+                                            var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName, uploadChannel);
+                                            SlackHelper.PostMessageWithDownloadButton("Click here to download rule application difference report from GitHub", fileName, downloadGitHubLink, "RULEAPP DIFF REPORT - ", channel);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            await NotificationHelper.NotifyAsync($"Error uploading difference report to GitHub: {ex.Message}", "RULEAPP REPORT", "Debug");
+                                        }
                                         break;
                                 }
                             }

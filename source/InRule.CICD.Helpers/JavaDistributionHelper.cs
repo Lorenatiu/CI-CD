@@ -59,6 +59,8 @@ namespace InRule.CICD.Helpers
 
                 await NotificationHelper.NotifyAsync($"*Java jar file is being generated for {ruleAppDef.Name}...*", Prefix, "Debug");
 
+                //byte[] byteArray = Encoding.ASCII.GetBytes(ruleAppDef.GetXml());
+                //MemoryStream stream = new MemoryStream(byteArray);
                 var ruleAppPath = Path.Combine(RuleAppPath, Guid.NewGuid() + ".ruleappx");
 
                 using (var zipArchive = ZipFile.Open(ruleAppPath, ZipArchiveMode.Create))
@@ -74,6 +76,10 @@ namespace InRule.CICD.Helpers
                 HttpResponseMessage result;
 
                 await NotificationHelper.NotifyAsync("Using rule application file for rule application " + ruleAppDef.Name, Prefix, "Debug");
+                //Console.ForegroundColor = ConsoleColor.Yellow;
+                //SlackHelper.PostSimpleMessage(Path.GetFullPath(ruleAppPath), Prefix);
+                //Console.ResetColor();
+                //SlackHelper.PostSimpleMessage("...", Prefix, "Debug");
 
                 using (var ruleAppStream = File.OpenRead(ruleAppPath))
                 using (var client = new HttpClient { BaseAddress = new Uri(BaseAddress) })
@@ -91,6 +97,8 @@ namespace InRule.CICD.Helpers
 
                     if (!result.IsSuccessStatusCode)
                     {
+                        //Console.ForegroundColor = ConsoleColor.Red;
+
                         if (htmlResults)
                             htmlContent += $"<br>Upload failed with status code: {(int)result.StatusCode} {result.ReasonPhrase}<br>";
 
@@ -112,10 +120,12 @@ namespace InRule.CICD.Helpers
                     {
                         if (DateTime.UtcNow.Subtract(startTime).TotalMinutes >= 10.0)
                         {
+                            //Console.ForegroundColor = ConsoleColor.Red;
                             if (htmlResults)
                                 htmlContent += "<br>Packaging into Java failed due to timeout period of 10 minutes.<br>";
 
                             await NotificationHelper.NotifyAsync($"Packaging into Java failed due to timeout period of 10 minutes.", Prefix, "Debug");
+                            //Console.ResetColor();
                             return;
                         }
 
@@ -244,7 +254,23 @@ namespace InRule.CICD.Helpers
                             errors1.AppendLine(">" + unsupportedError.feature.ToString());
                         }
                     }
+                    // Still need to stop processing
+                    //return errors.ToString();
 
+                    //if (returnPackage.unsupportedFeatures.Count > 0)
+                    //{
+                    //    //if (htmlResults)
+                    //    //    htmlContent += $"<br><b>Unsupported features converting ruleapp to Java jar</b><br>";
+
+                    //    errors1.AppendLine("*Unsupported features converting ruleapp to Java jar*");
+                    //    foreach (var noFeature in returnPackage.unsupportedFeatures)
+                    //    {
+                    //        if (htmlResults)
+                    //            htmlContent += $"<br>" + noFeature.feature + "<br>";
+
+                    //        errors1.AppendLine(noFeature.feature);
+                    //    }
+                    //}
                     if (htmlResults)
                         htmlContent += "</body></html>";
 
@@ -271,10 +297,14 @@ namespace InRule.CICD.Helpers
                     var saveToFileName = result.Content.Headers.ContentDisposition.FileName;
                     var filePath = Path.Combine(DestinationPath, saveToFileName);
 
+                    //Console.ForegroundColor = ConsoleColor.Green;
                     if (htmlResults)
                         htmlContent += $"<br>" + $"Packaging in Java complete. Saving the file to: {filePath}" + "<br>";
 
                     await NotificationHelper.NotifyAsync($"Packaging in Java complete. Saving the file to: {filePath}", Prefix, "Debug");
+                    //Console.ForegroundColor = ConsoleColor.Yellow;
+                    //SlackHelper.PostSimpleMessage(filePath);
+                    //Console.ResetColor();
 
                     var fileName = ruleAppDef.Name + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".jar";
 
@@ -294,54 +324,69 @@ namespace InRule.CICD.Helpers
 
                         if (channelType == UploadChannel.GitHub)
                         {
-                            var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(jarStream, fileName, uploadChannel);
-
-                            if (htmlResults)
-                                htmlContent += $"<br>" + $"Java jar has been generated for {ruleAppDef.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the Java jar file {fileName} from GitHub</a><br></body></html>";
-
-                            foreach (var channel in channels)
+                            try
                             {
+                                var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(jarStream, fileName, uploadChannel);
 
-                                switch (SettingsManager.GetHandlerType(channel))
+                                if (htmlResults)
+                                    htmlContent += $"<br>" + $"Java jar has been generated for {ruleAppDef.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the Java jar file {fileName} from GitHub</a><br></body></html>";
+
+                                foreach (var channel in channels)
                                 {
-                                    case IHelper.InRuleEventHelperType.Teams:
-                                        TeamsHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from GitHub",
-                                            ruleAppDef.Name + ".jar", downloadGitHubLink, Prefix, channel);
-                                        break;
-                                    case IHelper.InRuleEventHelperType.Slack:
-                                        SlackHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from GitHub",
-                                            ruleAppDef.Name + ".jar", downloadGitHubLink, Prefix, channel);
-                                        break;
+
+                                    switch (SettingsManager.GetHandlerType(channel))
+                                    {
+                                        case IHelper.InRuleEventHelperType.Teams:
+                                            TeamsHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from GitHub",
+                                                ruleAppDef.Name + ".jar", downloadGitHubLink, Prefix, channel);
+                                            break;
+                                        case IHelper.InRuleEventHelperType.Slack:
+                                            SlackHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from GitHub",
+                                                ruleAppDef.Name + ".jar", downloadGitHubLink, Prefix, channel);
+                                            break;
+                                    }
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                await NotificationHelper.NotifyAsync($"Error uploading Java JAR file to GitHub: {ex.Message}", Prefix, "Debug");
                             }
                         }
 
                         if (channelType == UploadChannel.Box)
                         {
-                            using (var fileStream = new FileStream(filePath, FileMode.Create))
+                            try
                             {
-                                await jarStream.CopyToAsync(fileStream);
-                            }
-
-                            var downloadLink = await BoxComHelper.UploadFile(fileName, filePath, uploadChannel);
-
-                            if (htmlResults)
-                                htmlContent += $"<br>" + $"Java jar has been generated for {ruleAppDef.Name}. <a href=\"{downloadLink}\">Click here to download the Java jar file {fileName} from Box.com</a><br></body></html>";
-
-                            foreach (var channel in channels)
-                            {
-
-                                switch (SettingsManager.GetHandlerType(channel))
+                                using (var fileStream = new FileStream(filePath, FileMode.Create))
                                 {
-                                    case IHelper.InRuleEventHelperType.Teams:
-                                        TeamsHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from Box.com",
-                                            ruleAppDef.Name + ".jar", downloadLink, Prefix, channel);
-                                        break;
-                                    case IHelper.InRuleEventHelperType.Slack:
-                                        SlackHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from Box.com",
-                                            ruleAppDef.Name + ".jar", downloadLink, Prefix, channel);
-                                        break;
+                                    await jarStream.CopyToAsync(fileStream);
                                 }
+
+                                var downloadLink = await BoxComHelper.UploadFile(fileName, filePath, uploadChannel);
+                                //var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm");
+
+                                if (htmlResults)
+                                    htmlContent += $"<br>" + $"Java jar has been generated for {ruleAppDef.Name}. <a href=\"{downloadLink}\">Click here to download the Java jar file {fileName} from Box.com</a><br></body></html>";
+
+                                foreach (var channel in channels)
+                                {
+
+                                    switch (SettingsManager.GetHandlerType(channel))
+                                    {
+                                        case IHelper.InRuleEventHelperType.Teams:
+                                            TeamsHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from Box.com",
+                                                ruleAppDef.Name + ".jar", downloadLink, Prefix, channel);
+                                            break;
+                                        case IHelper.InRuleEventHelperType.Slack:
+                                            SlackHelper.PostMessageWithDownloadButton($"Java jar has been generated for {ruleAppDef.Name}. Click here to download the Java jar file from Box.com",
+                                                ruleAppDef.Name + ".jar", downloadLink, Prefix, channel);
+                                            break;
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                await NotificationHelper.NotifyAsync($"Error uploading Java JAR file to GitHub: {ex.Message}", Prefix, "Debug");
                             }
                         }
                     }
@@ -358,6 +403,14 @@ namespace InRule.CICD.Helpers
                     }
 
                 }
+
+                //string url = "https://inrulechicago-my.sharepoint.com/personal/mdrumea_inrule_com";
+
+                ///// SharePoint Folder Relative Url
+                //string folderUrl = "";
+
+                //var fileUrl = OneDriveHelper.UploadRest(url, folderUrl, @"C:\Temp\BupaGlobalSchema.jar");
+                //SlackHelper.PostSimpleMessage(fileUrl);
             }
             catch (Exception ex)
             {

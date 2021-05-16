@@ -155,57 +155,71 @@ namespace InRule.CICD.Helpers
 
                             if (channelType == UploadChannel.GitHub)
                             {
-                                var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(jsContent, fileName, uploadChannel);
-                                if (htmlResults)
-                                    htmlContent += $"<br>" + $"JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the JavaScript file {fileName} from GitHub</a><br></body></html>";
-
-                                foreach (var channel in channels)
+                                try
                                 {
-                                    switch (SettingsManager.GetHandlerType(channel))
+                                    var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(jsContent, fileName, uploadChannel);
+                                    if (htmlResults)
+                                        htmlContent += $"<br>" + $"JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the JavaScript file {fileName} from GitHub</a><br></body></html>";
+
+                                    foreach (var channel in channels)
                                     {
-                                        case IHelper.InRuleEventHelperType.Teams:
-                                            TeamsHelper.PostMessageWithDownloadButton($"JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from GitHub",
-                                                ruleApplication.Name + ".js", downloadGitHubLink, Prefix, channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.Slack:
-                                            SlackHelper.PostMessageWithDownloadButton($">JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from GitHub",
-                                                ruleApplication.Name + ".js", downloadGitHubLink, Prefix, channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.Email:
-                                            await SendGridHelper.SendEmail($"InRule CI/CD - JavaScript rule application", string.Empty, $">JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the JavaScript file {fileName} from GitHub</a>", channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.EventLog:
-                                            EventLog.WriteEntry("Application", $"JavaScript file has been generated for {ruleApplication.Name}. JavaScript file from GitHub at {downloadGitHubLink}");
-                                            break;
+                                        switch (SettingsManager.GetHandlerType(channel))
+                                        {
+                                            case IHelper.InRuleEventHelperType.Teams:
+                                                TeamsHelper.PostMessageWithDownloadButton($"JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from GitHub",
+                                                    ruleApplication.Name + ".js", downloadGitHubLink, Prefix, channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.Slack:
+                                                SlackHelper.PostMessageWithDownloadButton($">JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from GitHub",
+                                                    ruleApplication.Name + ".js", downloadGitHubLink, Prefix, channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.Email:
+                                                await SendGridHelper.SendEmail($"InRule CI/CD - JavaScript rule application", string.Empty, $">JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadGitHubLink}\">Click here to download the JavaScript file {fileName} from GitHub</a>", channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.EventLog:
+                                                EventLog.WriteEntry("Application", $"JavaScript file has been generated for {ruleApplication.Name}. JavaScript file from GitHub at {downloadGitHubLink}");
+                                                break;
+                                        }
                                     }
+                                }
+                                catch (Exception ex)
+                                {
+                                    await NotificationHelper.NotifyAsync($"Error uploading JavaScript file to GitHub: {ex.Message}", Prefix, "Debug");
                                 }
                             }
 
                             if (channelType == UploadChannel.Box)
                             {
-                                var downloadLink = await BoxComHelper.UploadFile(fileName, filePath, uploadChannel);
-                                if (htmlResults)
-                                    htmlContent += $"<br>" + $"JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadLink}\">Click here to download the JavaScript file {fileName} from Box.com</a><br></body></html>";
-
-                                foreach (var channel in channels)
+                                try
                                 {
-                                    switch (SettingsManager.GetHandlerType(channel))
+                                    var downloadLink = await BoxComHelper.UploadFile(fileName, filePath, uploadChannel);
+                                    if (htmlResults)
+                                        htmlContent += $"<br>" + $"JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadLink}\">Click here to download the JavaScript file {fileName} from Box.com</a><br></body></html>";
+
+                                    foreach (var channel in channels)
                                     {
-                                        case IHelper.InRuleEventHelperType.Teams:
-                                            TeamsHelper.PostMessageWithDownloadButton($"JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from Box.com",
-                                                ruleApplication.Name + ".js", downloadLink, Prefix, channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.Slack:
-                                            SlackHelper.PostMessageWithDownloadButton($">JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from Box.com",
-                                                ruleApplication.Name + ".js", downloadLink, Prefix, channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.Email:
-                                            await SendGridHelper.SendEmail($"InRule CI/CD - JavaScript rule application", string.Empty, $">JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadLink}\">Click here to download the JavaScript file {fileName}.js from Box.com</a>", channel);
-                                            break;
-                                        case IHelper.InRuleEventHelperType.EventLog:
-                                            EventLog.WriteEntry("Application", $"JavaScript file has been generated for {ruleApplication.Name}. JavaScript file from Box.com at {downloadLink}");
-                                            break;
+                                        switch (SettingsManager.GetHandlerType(channel))
+                                        {
+                                            case IHelper.InRuleEventHelperType.Teams:
+                                                TeamsHelper.PostMessageWithDownloadButton($"JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from Box.com",
+                                                    ruleApplication.Name + ".js", downloadLink, Prefix, channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.Slack:
+                                                SlackHelper.PostMessageWithDownloadButton($">JavaScript file has been generated for {ruleApplication.Name}. Click here to download the JavaScript file from Box.com",
+                                                    ruleApplication.Name + ".js", downloadLink, Prefix, channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.Email:
+                                                await SendGridHelper.SendEmail($"InRule CI/CD - JavaScript rule application", string.Empty, $">JavaScript file has been generated for {ruleApplication.Name}. <a href=\"{downloadLink}\">Click here to download the JavaScript file {fileName}.js from Box.com</a>", channel);
+                                                break;
+                                            case IHelper.InRuleEventHelperType.EventLog:
+                                                EventLog.WriteEntry("Application", $"JavaScript file has been generated for {ruleApplication.Name}. JavaScript file from Box.com at {downloadLink}");
+                                                break;
+                                        }
                                     }
+                                }
+                                catch (Exception ex)
+                                {
+                                    await NotificationHelper.NotifyAsync($"Error uploading JavaScript file to Box.com: {ex.Message}", Prefix, "Debug");
                                 }
                             }
                         }

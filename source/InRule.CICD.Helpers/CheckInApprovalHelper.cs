@@ -1,4 +1,6 @@
-﻿using System;
+﻿using InRule.Repository;
+using InRule.Repository.Client;
+using System;
 using System.Dynamic;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -9,23 +11,33 @@ namespace InRule.CICD.Helpers
     {
         private static readonly string moniker = "ApprovalFlow";
 
-        public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource)
+        //static string InRuleCICDServiceUri = "http://localhost/InRule.CICD/Service.svc/api";
+
+
+        [Obsolete]
+        public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource, RuleApplicationDef ruleAppDef)
         {
-            await SendApproveRequestAsync(eventDataSource, moniker);
+            await SendApproveRequestAsync(eventDataSource, ruleAppDef, moniker);
         }
 
-        public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource, string moniker)
+        [Obsolete]
+        public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource, RuleApplicationDef ruleAppDef, string moniker)
         {
             string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
             string ApplyLabelApprover = SettingsManager.Get($"{moniker}.ApplyLabelApprover");
             string NotificationChannel = SettingsManager.Get($"{moniker}.NotificationChannel");
-            
+            string RequesterNotificationChannel = SettingsManager.Get($"{moniker}.RequesterNotificationChannel");
+
             try
             {
                 var eventData = (dynamic)eventDataSource;
 
                 if (eventData.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
                 {
+                    using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(eventData.RepositoryUri.ToString()), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword")))
+                    {
+                        connection.ApplyLabel(ruleAppDef, "PENDING " + eventData.RuleAppRevision.ToString());
+                    }
 
                     JavaScriptSerializer javaScriptSerializer = new JavaScriptSerializer();
                     string applyLabelEvent = javaScriptSerializer.Serialize(eventData);
@@ -40,13 +52,31 @@ namespace InRule.CICD.Helpers
                         switch (SettingsManager.GetHandlerType(channel))
                         {
                             case IHelper.InRuleEventHelperType.Teams:
-                                TeamsHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {eventData.GUID}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
+                                TeamsHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {ruleAppDef.Name}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
                                 break;
                             case IHelper.InRuleEventHelperType.Slack:
-                                SlackHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {eventData.GUID}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
+                                SlackHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {ruleAppDef.Name}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
                                 break;
                             case IHelper.InRuleEventHelperType.Email:
                                 await SendGridHelper.SendEmail("APPROVE AND APPLY LABEL", "", $"Click <a href='{approvalUrl}'>here</a> to approve", channel);
+                                break;
+                        }
+                    }
+
+                    var requesterChannels = RequesterNotificationChannel.Split(' ');
+                    foreach (var channel in requesterChannels)
+                    {
+
+                        switch (SettingsManager.GetHandlerType(channel))
+                        {
+                            case IHelper.InRuleEventHelperType.Teams:
+                                TeamsHelper.PostSimpleMessage($"A request for approving label {eventData.Label} has been sent to user{(ApplyLabelApprover.Split(' ').Length > 1 ? "s " : " ")}{ApplyLabelApprover}.", "APPROVAL FLOW", channel);
+                                break;
+                            case IHelper.InRuleEventHelperType.Slack:
+                                SlackHelper.PostMarkdownMessage($"A request for approving label {eventData.Label} has been sent to user{(ApplyLabelApprover.Split(' ').Length > 1 ? "s " : " ")}{ApplyLabelApprover}.", "APPROVAL FLOW", channel);
+                                break;
+                            case IHelper.InRuleEventHelperType.Email:
+                                await SendGridHelper.SendEmail("APPLY LABEL REQUEST SENT", $"A request for approving label {eventData.Label} has been sent to user{(ApplyLabelApprover.Split(' ').Length > 1 ? "s " : " ")}{ApplyLabelApprover}.", "", channel);
                                 break;
                         }
                     }
