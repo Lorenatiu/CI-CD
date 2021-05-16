@@ -14,6 +14,7 @@
     "value": "",
     "slotSetting": false
   },
+  {
     "name": "CatalogUri",
     "value": "https://[catalog_service].azurewebsites.net/Service.svc",
     "slotSetting": false
