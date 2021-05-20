@@ -10,11 +10,13 @@ The CI/CD solution requires a number of binaries and configuration parameters to
 
 * [Database Deployment](#database-deployment)
 * [irCatalog Web App Deployment](#web-app-deployment)
+* [Configure CI/CD Catalog Service](#configure-catalog-service-with-cicd)
 
 #### Deploying to an existing instance:
 
 * This option applies if you first [deployed the standard Azure irCatalog App Service](https://github.com/InRule/AzureAppServices).
-* [Add and Configure CI/CD Artifacts](#add-and-configure-cicd-artifacts)
+* [Add CI/CD Artifacts](#add-cicd-artifacts-to-an-existing-catalog-service)
+* [Configure CI/CD Catalog Service](#configure-catalog-service-with-cicd)
 
 
 If you have not done so already, please read the [prerequisites](deployment.md#prerequisites) before you get started.
@@ -46,7 +48,7 @@ az group create --name RESOURCE_GROUP_NAME --location LOCATION
 ### Create Database Server
 Create the [Azure SQL Server](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-logical-servers) with the [az sql server create](https://docs.microsoft.com/en-us/cli/azure/sql/server?view=azure-cli-latest#az-sql-server-create) command:
 ```powershell
-# Example: az sql server create --name contoso-catalog-prod-sql --resource-group inrule-prod-rg --location eastus --admin-user admin --admin-password %14TVpB*g$4b
+# Example: az sql server create --name contoso-catalog-prod-sql --resource-group inrule-prod-rg --location eastus --admin-user cicdadmin --admin-password password
 az sql server create --name SERVER_NAME --resource-group RESOURCE_GROUP_NAME --location LOCATION --admin-user ADMIN_USER_NAME --admin-password ADMIN_USER_PASSWORD
 ```
 
@@ -160,18 +162,23 @@ The irCatalog application now needs to be configured to point to your irCatalog 
 az webapp config appsettings set --name WEB_APP_NAME --resource-group RESOURCE_GROUP_NAME --settings inrule:repository:service:connectionString="Server=tcp:SERVER_NAME.database.windows.net,1433;Initial Catalog=DATABASE_NAME;Persist Security Info=False;User ID=USER_NAME;Password=USER_PASSWORD;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30";
 ```
 
-### Verify using irAuthor®
-Using irAuthor you should now be able to connect to your catalog using the url [https://WEB_APP_NAME.azurewebsites.net/service.svc](https://WEB_APP_NAME.azurewebsites.net/service.svc).
-
-## Add and Configure CI/CD Artifacts
+## Add CICD Artifacts to an Existing Catalog Service
 
 This section applies when deploying only the CI/CD add-on to an existing instance of the irCatalog App Service. The steps to configure the Azure app service with the CI/CD features are:
 
 * Download [InRule.Catalog.Service_CICD.zip](../releases/InRule.Catalog.Service_CICD.zip) and unzip in a folder on the local file system.
+* Copy the content of the bin folder to the existing bin folder in App Service Editor. Accept to overwrite files, if prompted.
+
+## Configure Catalog Service with CICD
 * Download the starter configuration file [InRule.Catalog.Service_CICD.config.json](../config/InRule.Catalog.Service_CICD.config.json) and save it to the local file system. Edit the values for *AesEncryptDecryptKey* and *ApiKeyAuthentication.ApiKey* to match the values set on the InRule CI/CD service.
 * In Azure portal, navigate to the App Service Editor:
-![Azure App Service Editor](../images/InRuleCICD_AzureAddOn1.png)
-* Copy the content of the bin folder to the existing bin folder in App Service Editor. Accept to overwrite files, if prompted.
-* Open the bulk configuration editor and merge the items in the file downloaded and edited before:
-![Azure App Service Editor](../images/InRuleCICD_AzureAddOn2.png), then save.
+
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn1.png)
+* Open the bulk configuration editor, by clicking Advanced Edit, and merge the items in the file downloaded and edited before, then click Save and agree with the action that restarts the app service:
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn2.png)
+
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
 * Restart the app service and confirm that the irCatalog service works properly: browse to the URL in browser, open a rule application in irAuthor.
+
+### Verify using irAuthor®
+Using irAuthor you should now be able to connect to your catalog using the url [https://WEB_APP_NAME.azurewebsites.net/service.svc](https://WEB_APP_NAME.azurewebsites.net/service.svc).
