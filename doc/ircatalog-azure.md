@@ -16,7 +16,7 @@ The CI/CD solution requires a number of binaries and configuration parameters to
 * [Add CI/CD Artifacts](#add-cicd-artifacts-to-an-existing-catalog-service)
 * [Configure CI/CD Catalog Service](#configure-catalog-service-with-cicd)
 
-
+---
 ## Add CICD Artifacts to an Existing Catalog Service
 
 This section applies when deploying only the CI/CD add-on to an existing instance of the irCatalog App Service. The steps to configure the Azure app service with the CI/CD features are:
@@ -24,6 +24,7 @@ This section applies when deploying only the CI/CD add-on to an existing instanc
 * Download [InRule.Catalog.Service_CICD.zip](../releases/InRule.Catalog.Service_CICD.zip) and unzip in a folder on the local file system.
 * Copy the content of the bin folder to the existing bin folder in App Service Editor. Accept to overwrite files, if prompted.
 
+---
 ## Configure Catalog Service with CICD
 
 This section applies to both deployment options: new irCatalog service with CI/CD or existing irCatalog service.  Once either app service was created and the binaries deployed or updated, the configuration must be updated using [Azure portal](https://portal.azure.com): 
@@ -39,5 +40,6 @@ This section applies to both deployment options: new irCatalog service with CI/C
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
 * Restart the app service and confirm that the irCatalog service works properly: browse to the URL in browser, open a rule application in irAuthor.
 
+---
 ### Verify using irAuthor®
 Using irAuthor you should now be able to connect to your catalog using the url [https://WEB_APP_NAME.azurewebsites.net/service.svc](https://WEB_APP_NAME.azurewebsites.net/service.svc).

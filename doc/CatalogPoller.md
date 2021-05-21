@@ -18,6 +18,7 @@ It is important to note that each poller query will impact the catalog service, 
 
 If the frequency of poller checks is low and the rule applications are updated many times over the corresponding interval, then more check in events will be processed, taking longer and causing more load on the catalog service.  Also, because most of our customers are interested in doing something with each new rule application revision, the rule application content is extracted from the catalog and included in the message sent to the CI/CD service.  The poller should be configured for the specifics of the catalog, to optimize for the combination of rule application number and sizes, updates frequency, etc.
 
+---
 ## Deploy CI/CD catalog poller to Azure
 
 This Azure Functions sample script creates the poller function app, which is a container for the function polling the catalog on a schedule. The function app is created using the Consumption plan, which is ideal for event-driven serverless workloads.
@@ -66,7 +67,7 @@ az functionapp deployment source config-zip -g RESOURCE_GROUP_NAME -n POLLER_FUN
 ```
 
 
-
+---
 ## Configuration
 
 The configuration follows the format in the [starter cloud config file](../config/InRule.CICD.CatalogPoller.config.json).

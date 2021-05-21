@@ -10,6 +10,7 @@ At a minimum, the InRule CI/CD framework can be configured to post basic notific
 
 The other notification level is "**debug**" and it makes for more verbose messaging, like details of the steps during handler actions.  The decision, for which notification channels receive debug messages, is made using the configuration item:
 
+---
 ##### Configuration
 ```
 <add key="DebugNotifications" value="MySlack EventLog Teams"/>
@@ -24,6 +25,7 @@ Example debug notifications in Slack, under "InRule CI/CD (Debug)" entries:
 
 ![Slack Debug Notification](../images/Sample1-SlackNotification_debug.PNG)
 
+---
 ### Notification Configuration Samples
 
 The initial offering comes with a number of notification channels: **Slack, Teams, and Email** (via SendGrid).  All configuration examples below are **applicable for a local deployment**.  **For the Azure CI/CD app service**, the configuration follows the format in the [starter cloud config file](../config/InRule.CICD.Runtime.Service.config.json).
@@ -72,6 +74,7 @@ The initial offering comes with a number of notification channels: **Slack, Team
     ````
  
     This is minimal InRule CI/CD configuration file content to start using the framework with only Slack messaging.
+---    
 2. **Email** - The same kind of messages sent to Slack can be sent to other channels, another one being Email.  The formatting is different, to accommodate the differences between markdown for Slack and a text or HTML email body, but the content is the same.  Also, emails can be sent for both normal or debug notification levels.
 
     ![Email Notification](../images/Sample2-EmailNotification.png)
@@ -98,7 +101,7 @@ The initial offering comes with a number of notification channels: **Slack, Team
     |Email.**EmailSendFromName**| The email address that will show on the "From" field for the email being sent.
     |Email.**EmailSendTo**| The value used for the "To", determining to which email(s) the message will be sent.  The message can be distributed to one or more email addresses.  When more recipients are needed, the addresses must be separated by spaces in the configuration value string, like in the example above. 
     |Email.**EmailSendToName**| The friendly name associated with the address being used in the "To" configuration key.
-
+---
 3. **Teams** - A channel in Microsoft Teams can receive notifications, both normal and debug, like the Slack channels.  Similarly, Teams also requires the webhook URL's.  Channels can be added and configured in the Teams application, under channel's "more options" -> Connectors -> Incoming Webhooks.  The URL can be set/found on the webhook's configuration screen.
 
     ![Teams Webhooks](../images/Sample3-TeamsNotification1.PNG) ![Teams Webhooks](../images/Sample3-TeamsNotification.PNG)

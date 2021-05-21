@@ -8,7 +8,7 @@ The conversion of the rule application to Java JAR takes longer than most other 
 
 ![Sample Slack output](../images/Sample4-JavaSlackFail.PNG)
 
-
+---
 #### Configuration
 
 All relevant aspects of this integration are set in the configuration, under the default "Java" moniker.  Like for all other CI/CD event handlers, it is possible to create any number of configuration groups with 'type="Java"', which can then be used with any of the intercepted catalog events.

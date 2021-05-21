@@ -15,7 +15,7 @@ Sending InRule catalog events to an Azure Service Bus topic is not an action tha
 
 ![Example debug Service Bus notification in Slack](../images/Sample9-ServiceBusSlack.PNG)
 
-
+---
 #### Configuration
 
 In order to enable the distribution of catalog events to an Azure Service Bus topic, the minimal configuration can be seen in the [sample configuration file](../config/InRuleCICD_ServiceBus.config), which is **applicable for a local deployment**.  **For the Azure CI/CD app service**, the configuration follows the format in the [starter cloud config file](../config/InRule.CICD.Runtime.Service.config.json). 

@@ -8,7 +8,7 @@ The CI/CD solution requires a number of binaries and configuration parameters to
 
 * [Add and Configure CI/CD Artifacts](#add-and-configure-ci\/cd-artifacts)
 
-
+---
 ## Add and Configure CI/CD Artifacts
 
 This section applies when deploying only the CI/CD add-on components to an existing instance of the irCatalog  Service.  The steps to configure the local/on premise catalog service with CI/CD features are:

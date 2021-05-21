@@ -6,6 +6,7 @@ Many companies use Azure DevOps for various processes, mostly around source code
 
 With rule applications being part of projects, but not treated as source code because of InRule specific handling, such a pipeline can be used for the more specialized steps required to incorporate rule applications into other build processes.  [One such example](../devops) is offered with this release of the InRule CI/CD framework, with which a pipeline can be started to run regression tests and promote a rule application between two catalogs.
 
+---
 #### Configuration
 
 The DevOps action is configurable in the CI/CD config file, specifying the pipeline coordinates under the section labeled with the "DevOps" moniker.  The same moniker can then be listed under the actions triggered for a catalog event, under the corresponding handler entry in the same configuration file.

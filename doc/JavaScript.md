@@ -35,7 +35,7 @@ To package a rule application, you must have an authorized irDistribution user a
 
 The subscription key is tied to your user account. Upon successful login to the website (https://distribution.inrule.com/), your subscription key will be available to you.  You will need that subscription key to package JavaScript via the irDistribution service and from within the irX for JavaScript authoring extension.
 
-
+---
 #### Configuration
 
 The InRule CI/CD JavaScript component automates this step by calling the irDistribution service with the revision of the rule application involved in the captured catalog event, using the client subscription key.
