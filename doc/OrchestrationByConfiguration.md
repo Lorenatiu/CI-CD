@@ -9,6 +9,7 @@ The main areas covered in configuration are:
 * A section for event handlers mapped to the catalog events.  For each event to which we want to trigger actions, an entry is required, named using the prefix "On" followed by the event name.  The corresponding value is a space separated list of monkikers, each representing an action defined later in the configuration.
 * The bulk of the configuration file is taken by the sections containing action definitions.  For example, some available actions are for the integration with Slack, Teams or for more involved processes like generating rule application reports.
 
+---
 ### Common Settings
 
 
@@ -33,7 +34,7 @@ The main areas covered in configuration are:
   <add key="CatalogPassword" value="******"/>
 ```  
 
-
+---
 ### Configuring Tracked Catalog Events
 
 |Configuration Key | Comments
@@ -51,6 +52,7 @@ List of available events | CheckinRuleApp CheckoutDefs UndoCheckout CreateRuleAp
   <add key="OnAny" value="Slack"/>
 ```
 
+---
 ### CI/CD Actions
 
 The CI/CD solution comes with a set of "built-in" actions and integration options, listed below.  Each action has a corresponding moniker (like "Slack", "Email"), which is mandatory to use for either marking the default configuration entries or for deciding the type of alternate sections for that action.  For instance, the first group of entries uses the "Slack" moniker, with which all configuration keys are prefixed.  Once defined in configuration, the "Slack" action can then be used with any of the handlers mapped to catalog events.

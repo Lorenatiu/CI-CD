@@ -8,6 +8,7 @@ Example of a rule application difference report sent via email:
 
 ![Example of rule application difference report sent via email](../images/Sample2-RuleAppDiffReportEmail.PNG)
 
+---
 #### Configuration
 
 In order to enable the report generation and distribution with the InRule® CI/CD solution, a number of configuration entries are required.  Here is [a sample configuration file](../config/InRuleCICD_RuleAppDiffReport.config) with the necessary items for deciding that the difference report will be created on check-in and where it will be distributed.  This configuration example is **applicable for a local deployment**.  **For the Azure CI/CD app service**, the configuration follows the format in the [starter cloud config file](../config/InRule.CICD.Runtime.Service.config.json).

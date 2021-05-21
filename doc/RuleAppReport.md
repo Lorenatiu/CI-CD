@@ -12,6 +12,7 @@ And an example of the download link sent to Slack:
 
 ![Example of rule application report link sent via Slack](../images/Sample2-RuleAppReportSlack.PNG)
 
+---
 #### Configuration
 
 In order to enable the report generation and distribution with the InRule CI/CD solution, a number of configuration entries are required.  Here is [a sample configuration file](../config/InRuleCICD_RuleAppReport.config) with the necessary items for deciding that the report will be created on check-in and where it will be distributed. This configuration example is **applicable for a local deployment**.  **For the Azure CI/CD app service**, the configuration follows the format in the [starter cloud config file](../config/InRule.CICD.Runtime.Service.config.json).

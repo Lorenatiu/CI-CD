@@ -18,7 +18,7 @@ namespace CheckinRequestListener
 {
     public class RuleApplicationParameterInspector : IParameterInspector
     {
-        string FilterByUser = SettingsManager.Get("FilterEventsByUser").ToLower();
+        string FilterByUser = SettingsManager.Get("FilterEventsByUser");
         string ApplyLabelApprover = SettingsManager.Get("ApprovalFlow.ApplyLabelApprover");
         string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
 
@@ -34,7 +34,7 @@ namespace CheckinRequestListener
                     dynamic thisEvent = new ExpandoObject();
                     thisEvent.RequestorUsername = input.SecurityHeader.Identity ?? (input.SecurityHeader.Impersonate ? "Impersonated" : "UNKNOWN");
 
-                    var filterByUsers = FilterByUser.Split(' ').ToList();
+                    var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
                     if (!filterByUsers.Contains(thisEvent.RequestorUsername.ToString().ToLower()))
                         return thisEvent;
@@ -242,7 +242,7 @@ namespace CheckinRequestListener
                     //if (eventData.RequestorUsername.ToString().ToLower() != FilterByUser)
                     //    return;
 
-                    var filterByUsers = FilterByUser.Split(' ').ToList();
+                    var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
                     if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
                         return;
