@@ -40,8 +40,15 @@ namespace InRule.CICD.Helpers
         public static async Task ProcessEventAsync(ExpandoObject eventDataSource, string ruleAppXml)
         {
             var eventData = (dynamic)eventDataSource;
+
             try
             {
+                if (eventData.OperationName == "CheckinRuleApp" || eventData.OperationName == "OverwriteRuleApp" || eventData.OperationName == "CreateRuleApp")
+                    if (((IDictionary<String, object>)eventData).ContainsKey("RuleAppRevision"))
+                        eventData.RuleAppRevision++;
+                    else
+                        ((IDictionary<String, object>)eventData).Add("RuleAppRevision", 1);
+
                 string EventHandlers = SettingsManager.Get("On" + eventData.OperationName);
                 if (string.IsNullOrEmpty(EventHandlers))
                 {
@@ -204,8 +211,8 @@ namespace InRule.CICD.Helpers
         {
             try
             {
-                if (catalogEventName == "CheckinRuleApp" || catalogEventName == "OverwriteRuleApp" || catalogEventName == "CreateRuleApp")
-                    revision++;
+                //if (catalogEventName == "CheckinRuleApp" || catalogEventName == "OverwriteRuleApp" || catalogEventName == "CreateRuleApp")
+                //    revision++;
 
                 RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(catalogUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
                 return connection.GetSpecificRuleAppRevision(new System.Guid(ruleAppGuid), revision);

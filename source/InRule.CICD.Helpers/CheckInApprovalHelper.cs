@@ -58,7 +58,7 @@ namespace InRule.CICD.Helpers
                                 SlackHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {ruleAppDef.Name}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
                                 break;
                             case IHelper.InRuleEventHelperType.Email:
-                                await SendGridHelper.SendEmail("APPROVE AND APPLY LABEL", "", $"Click <a href='{approvalUrl}'>here</a> to approve", channel);
+                                await SendGridHelper.SendEmail("APPROVE AND APPLY LABEL", "", $"Click <a href='{approvalUrl}'>here</a> to approve.<br>{SendGridHelper.GetHtmlForEventData(eventDataSource)}", channel);
                                 break;
                         }
                     }
@@ -66,7 +66,6 @@ namespace InRule.CICD.Helpers
                     var requesterChannels = RequesterNotificationChannel.Split(' ');
                     foreach (var channel in requesterChannels)
                     {
-
                         switch (SettingsManager.GetHandlerType(channel))
                         {
                             case IHelper.InRuleEventHelperType.Teams:

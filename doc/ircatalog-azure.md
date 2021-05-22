@@ -32,13 +32,28 @@ This section applies to both deployment options: new irCatalog service with CI/C
 * In Azure portal, navigate to the App Service Editor:
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn1.png)
-* Open the bulk configuration editor, by clicking Advanced Edit, and merge the items in the file downloaded and edited before.  You must maintain the validity of the JSON array content, following the format in the two files to merge only the new configuration entries:
+* Open the bulk configuration editor, by clicking "Advanced edit", and merge the items in the file downloaded and edited before.  You must maintain the validity of the JSON array content, following the format in the two files to merge only the new configuration entries:
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn2.png)
 * Click Save and agree with the action that restarts the app service:
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
 * Restart the app service and confirm that the irCatalog service works properly: browse to the URL in browser, open a rule application in irAuthor.
+
+* If the InRule CI/CD App Service was created before the creation of the irCatalog App Service, it is necessary to update the CI/CD App Service configuration with the credentials required for accessing irCatalog App Service.  This can be done by navigating to the CI/CD App Service in [Azure portal](https://portal.azure.com) and setting the value of the CatalogUsername and CatalogPassword parameters.  Make sure to includ "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
+
+    ```
+    {
+        "name": "CatalogPassword",
+        "value": "",
+        "slotSetting": false
+    },
+    {
+        "name": "CatalogUsername",
+        "value": "admin",
+        "slotSetting": false
+    }
+    ```
 
 ---
 ### Verify using irAuthor®

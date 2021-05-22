@@ -20,6 +20,20 @@ This section applies when deploying only the CI/CD add-on components to an exist
 
    ![irCatalog folder](../images/InRuleCICD_irCatalogLocal.PNG)
 
+* For all the available CI/CD actions, follow the corresponding details available at the links below, which include how.  More details are also available on page [Orchestration by Configuration](doc/OrchestrationByConfiguration.md).
+
+    * [Understanding and using notifications](doc/Notifications.md)
+    * [Slack integration](doc/InRuleCICD_Slack.md)
+    * [Azure DevOps integration](doc/DevOps.md)
+    * [Trigger a DevOps pipeline running regression tests and promoting rule application](devops)
+    * [Azure Event Grid integration](doc/AzureEventGrid.md)
+    * [Azure Service Bus integration](doc/AzureServiceBus.md)
+    * [Generate Rule Application Report](doc/RuleAppReport.md)
+    * [Generate Rule Application Difference Report](doc/RuleAppDiffReport.md)
+    * [Generate Java Rule Application (JAR file) with irDistribution Service](doc/Java.md)
+    * [Generate JavaScript Rule Application with irDistribution Service](doc/JavaScript.md)
+    * [CI/CD Approval Flow](doc/ApprovalFlow.md)
+
 * Edit InRuleCICD.config with all the pertinent configuration parameters to drive the runtime behavior, like which actions to run on events and necessary configuration for each action.
 * Edit the file web.config with these items:
     * The reference to the InRuleCICD.config file
@@ -29,3 +43,4 @@ This section applies when deploying only the CI/CD add-on components to an exist
     * Changes for enabling the event listener behavior, as detailed [here](InRuleCICD_WcfBehaviorExtension.md).
 * Restart IIS service and confirm that the irCatalog service works properly: browse to the URL in browser, open a rule application in irAuthor®.
 * Verify using irAuthor.  Using irAuthor you should now be able to normally connect to your catalog using the URL.
+

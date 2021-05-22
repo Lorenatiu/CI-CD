@@ -70,13 +70,38 @@ The service requires a set of key value pairs in order to function properly, lik
 
 For now, it is possible to [download the starter config file](../config/InRule.CICD.Runtime.Service.config.json), in the format that is accepted when updating the app service via the Azure portal, and edit it. The starter file has only a few keys enabled, enough to ensure the encryption of the communication with the catalog and have the service react to a number of catalog events with a Slack message. The Slack webhook URL would have to be replaced with the correct value needed to send messages to the channel chosen and configured by the user.
 
+For all the available actions, follow the corresponsing details available at the links below, which include how :
+
+* [Understanding and using notifications](doc/Notifications.md)
+* [Slack integration](doc/InRuleCICD_Slack.md)
+* [Azure DevOps integration](doc/DevOps.md)
+* [Trigger a DevOps pipeline running regression tests and promoting rule application](devops)
+* [Azure Event Grid integration](doc/AzureEventGrid.md)
+* [Azure Service Bus integration](doc/AzureServiceBus.md)
+* [Generate Rule Application Report](doc/RuleAppReport.md)
+* [Generate Rule Application Difference Report](doc/RuleAppDiffReport.md)
+* [Generate Java Rule Application (JAR file) with irDistribution Service](doc/Java.md)
+* [Generate JavaScript Rule Application with irDistribution Service](doc/JavaScript.md)
+* [CI/CD Approval Flow](doc/ApprovalFlow.md)
+
 The encryption being symmetric, the same key value must be set in the Azure catalog app service's configuration (**AesEncryptDecryptKey**). Similarly, an authentication key (**ApiKeyAuthentication.ApiKey**) is required to communication with the CI/CD service, which has to match the value set for the catalog service.
 
 ![Azure configuration for keys](../images/InRuleCICD_configkeys.PNG)
 
 Next, edit the json config files with all the pertinent configuration parameters to drive the runtime behavior, like which actions to run on events and necessary configuration for each action.
 
-Open the bulk configuration editor and merge the items in the file downloaded and edited before:
-![Azure App Service Editor](../images/InRuleCICD_AzureAddOn2.png), then save.
+* In [Azure portal](https://portal.azure.com), navigate to the App Service Editor:
 
-Restart the app service and test the integration with the irCatalog App Service by generating an event for which a handler was configured.
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn1.png)
+* Open the bulk configuration editor, by clicking "Advanced edit", and merge the items in the file downloaded and edited before.  You must maintain the validity of the JSON array content, following the format in the two files to merge only the new configuration entries:
+
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn2.png)
+* Click Save and agree with the action that restarts the app service:
+
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
+
+* If the InRule CI/CD App Service was created and configured after setting up the CI/CD components on the irCatalog App Service, it is necessary to update the irCatalog App Service configuration with the newly created InRule CI/CD App Service URI.  This can be done by navigating to the irCatalog App Service in [Azure portal](https://portal.azure.com) and setting the value of the InRuleCICDServiceUri parameter.  Make sure to includ "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
+
+    ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn4.png)
+
+* To confirm the integration with the irCatalog App Service, generate an event for which a handler was configured and validate that the triggered actions are correct.
