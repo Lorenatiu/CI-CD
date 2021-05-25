@@ -29,6 +29,16 @@ This section applies when deploying only the CI/CD add-on to an existing instanc
 
 This section applies to both deployment options: new irCatalog service with CI/CD or existing irCatalog service.  Once either app service was created and the binaries deployed or updated, the configuration must be updated using [Azure portal](https://portal.azure.com): 
 * Download the starter configuration file [InRule.Catalog.Service_CICD.config.json](../config/InRule.Catalog.Service_CICD.config.json) and save it to the local file system. Edit the values for *AesEncryptDecryptKey* and *ApiKeyAuthentication.ApiKey* to match the values set on the InRule CI/CD service.
+
+|Configuration Key | Comments
+--- | ---
+|**IsCloudBased**| Accepts values "true" or "false".  Must be set to "true" for Azure deployments and "false" for on-premise. Used for both the client and server components.
+|**FilterEventsByUser**| List of space separated catalog user names.  This value is empty by default, meaning that events from all catalog users will be intercepted by CI/CD.  If usernames are listed here, the CI/CD solution will only react to events triggered by these users. Used for both the client and server components.
+|**ApprovalFlow.ApplyLabelApprover**| The user designated as label assignment approver.  If this user attempts to assign a label, it will be accepted directly.  If a different user attempts the same, [the approval flow](ApprovalFlow.md) will kick in.
+|**InRuleCICDServiceUri**| Complete URL for the CI/CD service, where event data are sent and processed.  For on-premise deployments, this parameter is not used.  Used only for the client component.
+|**ApiKeyAuthentication.ApiKey**| A string added to the authorization header on the request made by the listener component to the CI/CD service. The value can be any string and we recommend using randomly generated GUID values. For on-premise deployments, this parameter is not used.   Used for both the client and server components.  For a pair of catalog and CI/CD services that are set to work together, **this parameter must be set to the same value on both services**.
+|**AesEncryptDecryptKey**| A string value used for symmetric encryption/decryption of the payload sent by the catalog listener component to the CI/CD service. It must be between 16 and 32 characters long, with a combination of letters and numbers. For on-premise deployments, this parameter is not used.   Used for both the client and server components.  For a pair of catalog and CI/CD services that are set to work together, **this parameter must be set to the same value on both services**.
+
 * In Azure portal, navigate to the App Service Editor:
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn1.png)
