@@ -21,6 +21,7 @@ namespace CheckinRequestListener
         string FilterByUser = SettingsManager.Get("FilterEventsByUser");
         string ApplyLabelApprover = SettingsManager.Get("ApprovalFlow.ApplyLabelApprover");
         string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
+        string ApplyLabelFilterByLabels = SettingsManager.Get("ApprovalFlow.FilterByLabels");
 
         public object BeforeCall(string operationName, object[] inputs)
         {
@@ -33,14 +34,13 @@ namespace CheckinRequestListener
                     var input = (RepositoryWebRequest)inputs.First();
                     dynamic thisEvent = new ExpandoObject();
                     thisEvent.RequestorUsername = input.SecurityHeader.Identity ?? (input.SecurityHeader.Impersonate ? "Impersonated" : "UNKNOWN");
+                    thisEvent.RequiresApproval = false;
 
                     var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
-                    if (!filterByUsers.Contains(thisEvent.RequestorUsername.ToString().ToLower()))
-                        return thisEvent;
-
-                    //if (thisEvent.RequestorUsername.ToString().ToLower() != FilterByUser)
-                    //    return thisEvent;
+                    if (filterByUsers.Any(u => u.Length > 0) && input.GetType().Name != "ApplyLabelRequest")
+                        if (!filterByUsers.Contains(thisEvent.RequestorUsername.ToString().ToLower()))
+                            return thisEvent;
 
                     thisEvent.OperationName = operationName;
                     thisEvent.UtcTimestamp = DateTime.UtcNow;
@@ -55,12 +55,21 @@ namespace CheckinRequestListener
                     {
                         appDef = applyLabelRequest.AppDef;
                         thisEvent.Label = applyLabelRequest.Label;
-                        if (thisEvent.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
+                        thisEvent.InRuleCICDServiceUri = InRuleCICDServiceUri;
+
+                        if (!string.IsNullOrEmpty(ApplyLabelFilterByLabels))
                         {
-                            thisEvent.GUID = appDef.Guid;
-                            thisEvent.RuleAppRevision = appDef.Revision;
-                            SendToCICDService(thisEvent);
-                            throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                            var labels = ApplyLabelFilterByLabels.ToLower().Split(' ');
+
+                            if (labels.Contains(applyLabelRequest.Label.ToLower()))
+                                if (thisEvent.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
+                                {
+                                    thisEvent.RequiresApproval = true;
+                                    thisEvent.GUID = appDef.Guid;
+                                    thisEvent.RuleAppRevision = appDef.Revision;
+                                    SendToCICDService(thisEvent);
+                                    throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                                }
                         }
                     }
                     else if (input is CheckinRuleAppRequest checkingRuleAppRequest)
@@ -244,8 +253,9 @@ namespace CheckinRequestListener
 
                     var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
-                    if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
-                        return;
+                    if (filterByUsers.Any(u => u.Length > 0) && returnValue.GetType().Name != "ApplyLabelRequest")
+                        if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
+                            return;
 
                     eventData.ProcessingTimeInMs = (DateTime.UtcNow - ((DateTime)eventData.UtcTimestamp)).TotalMilliseconds;
 

@@ -11,9 +11,6 @@ namespace InRule.CICD.Helpers
     {
         private static readonly string moniker = "ApprovalFlow";
 
-        //static string InRuleCICDServiceUri = "http://localhost/InRule.CICD/Service.svc/api";
-
-
         [Obsolete]
         public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource, RuleApplicationDef ruleAppDef)
         {
@@ -23,7 +20,6 @@ namespace InRule.CICD.Helpers
         [Obsolete]
         public static async Task SendApproveRequestAsync(ExpandoObject eventDataSource, RuleApplicationDef ruleAppDef, string moniker)
         {
-            string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
             string ApplyLabelApprover = SettingsManager.Get($"{moniker}.ApplyLabelApprover");
             string NotificationChannel = SettingsManager.Get($"{moniker}.NotificationChannel");
             string RequesterNotificationChannel = SettingsManager.Get($"{moniker}.RequesterNotificationChannel");
@@ -31,6 +27,8 @@ namespace InRule.CICD.Helpers
             try
             {
                 var eventData = (dynamic)eventDataSource;
+                var InRuleCICDServiceUri = eventData.InRuleCICDServiceUri;
+                eventData.Name = ruleAppDef.Name;
 
                 if (eventData.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
                 {
@@ -58,7 +56,7 @@ namespace InRule.CICD.Helpers
                                 SlackHelper.PostMessageWithDownloadButton($"Click here to approve label {eventData.Label} for rule application {ruleAppDef.Name}", "Apply Label", approvalUrl, "APPROVAL FLOW - ", channel);
                                 break;
                             case IHelper.InRuleEventHelperType.Email:
-                                await SendGridHelper.SendEmail("APPROVE AND APPLY LABEL", "", $"Click <a href='{approvalUrl}'>here</a> to approve.<br>{SendGridHelper.GetHtmlForEventData(eventDataSource)}", channel);
+                                await SendGridHelper.SendEmail($"Approval Requested - ApplyLabel by user {eventData.RequestorUsername}", "", $"{SendGridHelper.GetHtmlForEventData(eventData, "", $"To see what changed, please review Difference Report, sent separately.<br><br><a href = '{approvalUrl}'>Click here to approve changes.</a>")}", channel);
                                 break;
                         }
                     }

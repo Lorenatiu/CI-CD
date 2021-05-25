@@ -170,7 +170,7 @@ namespace InRule.CICD
 
                 message = $"Label {label} has been approved by user{(SettingsManager.Get($"{approvalFlowMoniker}.ApplyLabelApprover").Split(' ').Length > 1 ? "s " : " ")}{SettingsManager.Get($"{approvalFlowMoniker}.ApplyLabelApprover")}.";
 
-                using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"))) // SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
+                using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword")))
                 {
                     var ruleAppDef = connection.GetSpecificRuleAppRevision(new Guid(ruleAppGuid), int.Parse(revision));
 
@@ -179,21 +179,26 @@ namespace InRule.CICD
                         connection.RemoveLabel(new Guid(ruleAppGuid), int.Parse(revision), "PENDING " + int.Parse(revision));
                         connection.ApplyLabel(ruleAppDef, label);
 
-                        var requesterChannels = SettingsManager.Get($"{approvalFlowMoniker}.RequesterNotificationChannel").Split(' ');
-                        foreach (var channel in requesterChannels)
-                        {
+                        var requesterChannelsConfig = SettingsManager.Get($"{approvalFlowMoniker}.RequesterNotificationChannel");
 
-                            switch (SettingsManager.GetHandlerType(channel))
+                        if (!string.IsNullOrEmpty(requesterChannelsConfig))
+                        {
+                            var requesterChannels = requesterChannelsConfig.Split(' ');
+                            foreach (var channel in requesterChannels)
                             {
-                                case IHelper.InRuleEventHelperType.Teams:
-                                    TeamsHelper.PostSimpleMessage(message, "APPROVAL FLOW", channel);
-                                    break;
-                                case IHelper.InRuleEventHelperType.Slack:
-                                    SlackHelper.PostMarkdownMessage(message, "APPROVAL FLOW", channel);
-                                    break;
-                                case IHelper.InRuleEventHelperType.Email:
-                                    SendGridHelper.SendEmail("APPLY LABEL REQUEST APPROVED", message, "", channel).Wait();
-                                    break;
+
+                                switch (SettingsManager.GetHandlerType(channel))
+                                {
+                                    case IHelper.InRuleEventHelperType.Teams:
+                                        TeamsHelper.PostSimpleMessage(message, "APPROVAL FLOW", channel);
+                                        break;
+                                    case IHelper.InRuleEventHelperType.Slack:
+                                        SlackHelper.PostMarkdownMessage(message, "APPROVAL FLOW", channel);
+                                        break;
+                                    case IHelper.InRuleEventHelperType.Email:
+                                        SendGridHelper.SendEmail("APPLY LABEL REQUEST APPROVED", message, "", channel).Wait();
+                                        break;
+                                }
                             }
                         }
                     }
@@ -205,9 +210,9 @@ namespace InRule.CICD
             }
             catch (Exception ex)
             {
-                return "ERROR APPLYING LABEL: " + ex.Message;
+                return "ERROR APPLYING LABEL: " + ex.Message + "\r\n" + ex.StackTrace;
             }
-            return "SUCCESS!";
+            return "SUCCESS: " + message;
         }
 
         public Stream ProcessInRuleEvent(Stream data)
@@ -279,8 +284,9 @@ namespace InRule.CICD
                 var ruleAppXml = string.Empty;
                 var filterByUsers = FilterByUser.Split(' ').ToList();
 
-                if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
-                    return;
+                if (filterByUsers.Any(u => u.Length > 0) && eventData.OperationName != "ApplyLabelRequest")
+                    if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
+                        return;
 
                 eventData.ProcessingTimeInMs = (DateTime.UtcNow - ((DateTime)eventData.UtcTimestamp)).TotalMilliseconds;
 

@@ -51,6 +51,7 @@ Only some catalog users get to be designated as approvers, leaving all others in
 |ApprovalFlow.**ApplyLabelApprover**| The username, as defined in the catalog, designated as approver of all label change actions.
 |ApprovalFlow.**NotificationChannel**| The space separated list of monikers corresponding to the notification channels where the approver receives messages regarding the approval flow.
 |ApprovalFlow.**RequesterNotificationChannel**| The space separated list of monikers corresponding to the notification channels where the requester receives messages regarding the approval flow, like the confirmation that the label they asked for has been applied.
+|ApprovalFlow.**FilterByLabels**| The space separated list of labels to which the approval flow will apply.  For instance, the label LIVE designates the revision that will be picked up by a build process and promoted to a higher environment, so setting the value of this parameter to "LIVE" will ensure that only approved assignments are allowed. 
 
 Since the ApplyLabel event is intercepted on the Catalog service, in order to block the action and initiate the approval flow, it is necessary to provide the ApplyLabelApprover value in the Catalog service's configuration.
 

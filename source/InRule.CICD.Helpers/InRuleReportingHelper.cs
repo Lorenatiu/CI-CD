@@ -15,16 +15,6 @@ namespace InRule.CICD.Helpers
             string UploadTo = SettingsManager.Get("RuleAppReport.UploadTo");
             try
             {
-                //string repositoryUri = System.ServiceModel.OperationContext.Current.RequestContext.RequestMessage.Headers.To.AbsoluteUri;
-                //RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), "Admin", "password");
-                //string url = "https://inrulechicago-my.sharepoint.com/personal/mdrumea_inrule_com";
-                //string url = SettingsManager.Get("SharepointUrl"); // "https://inrulechicago.sharepoint.com";
-                /// SharePoint Folder Relative Url
-                //string folderUrl = SettingsManager.Get("SharepointFolderUrl"); //"InRuleCICD";
-
-                //var fileUrl = OneDriveHelper.UploadRest(url, folderUrl, @"C:\Temp\BupaGlobalSchema.jar");
-                //Console.Write(fileUrl);
-
                 await NotificationHelper.NotifyAsync("Generating rule application report...", "RULEAPP REPORT", "Debug");
 
                 Encoding LocalEncoding = Encoding.UTF8;

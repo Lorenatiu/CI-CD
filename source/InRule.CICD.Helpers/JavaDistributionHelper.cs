@@ -41,7 +41,7 @@ namespace InRule.CICD.Helpers
             {
                 var channels = NotificationChannels.Split(' ');
                 var uploadChannels = UploadTo.Split(' ');
-                if (ApiKey.Length == 0 || BaseAddress.Length == 0) // || DestinationPath.Length == 0 || RuleAppPath.Length == 0)
+                if (ApiKey.Length == 0 || BaseAddress.Length == 0)
                     return;
 
                 if (IsCloudBased)
@@ -59,8 +59,6 @@ namespace InRule.CICD.Helpers
 
                 await NotificationHelper.NotifyAsync($"*Java jar file is being generated for {ruleAppDef.Name}...*", Prefix, "Debug");
 
-                //byte[] byteArray = Encoding.ASCII.GetBytes(ruleAppDef.GetXml());
-                //MemoryStream stream = new MemoryStream(byteArray);
                 var ruleAppPath = Path.Combine(RuleAppPath, Guid.NewGuid() + ".ruleappx");
 
                 using (var zipArchive = ZipFile.Open(ruleAppPath, ZipArchiveMode.Create))
@@ -76,10 +74,6 @@ namespace InRule.CICD.Helpers
                 HttpResponseMessage result;
 
                 await NotificationHelper.NotifyAsync("Using rule application file for rule application " + ruleAppDef.Name, Prefix, "Debug");
-                //Console.ForegroundColor = ConsoleColor.Yellow;
-                //SlackHelper.PostSimpleMessage(Path.GetFullPath(ruleAppPath), Prefix);
-                //Console.ResetColor();
-                //SlackHelper.PostSimpleMessage("...", Prefix, "Debug");
 
                 using (var ruleAppStream = File.OpenRead(ruleAppPath))
                 using (var client = new HttpClient { BaseAddress = new Uri(BaseAddress) })
@@ -97,8 +91,6 @@ namespace InRule.CICD.Helpers
 
                     if (!result.IsSuccessStatusCode)
                     {
-                        //Console.ForegroundColor = ConsoleColor.Red;
-
                         if (htmlResults)
                             htmlContent += $"<br>Upload failed with status code: {(int)result.StatusCode} {result.ReasonPhrase}<br>";
 
@@ -106,7 +98,6 @@ namespace InRule.CICD.Helpers
 
                         resultContent = await result.Content.ReadAsStringAsync();
                         await NotificationHelper.NotifyAsync(resultContent, Prefix, "Debug");
-                        //Console.ResetColor();
                         return;
                     }
 
@@ -157,62 +148,6 @@ namespace InRule.CICD.Helpers
 
                 File.Delete(ruleAppPath);
 
-                #region Commented code
-                //if (result.StatusCode != HttpStatusCode.OK)
-                //{
-                //    //Console.ForegroundColor = ConsoleColor.Red;
-                //    if (htmlResults)
-                //        htmlContent += $"<br>Packaging into Java failed with status code: {(int)result.StatusCode} {result.ReasonPhrase}<br>";
-
-                //    SlackHelper.PostMarkdownMessage($"*Packaging into Java failed with status code:* {(int)result.StatusCode} {result.ReasonPhrase}");
-
-                //    var resultContent = await result.Content.ReadAsStringAsync();
-                //    var resultObj = JsonConvert.DeserializeObject<JavaIrDistributionResponse>(resultContent);
-
-                //    var errors = string.Empty;
-                //    if (resultObj.errors.Count > 0)
-                //    {
-                //        if (htmlResults)
-                //            htmlContent += $"<br><b>Errors converting ruleapp to Java jar</b><br>";
-
-                //        errors += "*Errors converting ruleapp to Java jar*\r\n";
-                //        foreach (var error in resultObj.errors)
-                //        {
-                //            if (htmlResults)
-                //                htmlContent += $"<br><b>" + error.code + "</b>: " + error.description + "<br>";
-
-                //            errors += "\r\n*" + error.code + ":* " + error.description + "\r\n";
-                //        }
-                //    }
-
-                //    if (resultObj.unsupportedFeatures.Count > 0)
-                //    {
-                //        if (htmlResults)
-                //            htmlContent += $"<br><b>Unsupported features converting ruleapp to Java jar</b><br>";
-
-                //        errors += "\r\n*Unsupported features converting ruleapp to Java jar*\r\n";
-                //        foreach (var noFeature in resultObj.unsupportedFeatures)
-                //        {
-                //            if (htmlResults)
-                //                htmlContent += $"<br>" + noFeature.feature + "<br>";
-
-                //            errors += noFeature.feature + "\r\n";
-                //        }
-                //    }
-
-                //    if (errors.Length > 0)
-                //    {
-                //        if (htmlResults)
-                //            htmlContent += "</body></html>";
-
-                //        SlackHelper.PostMarkdownMessage(errors);
-                //        await SendGridHelper.SendEmail($"InRule CI/CD - Java jar generation", (htmlResults ? string.Empty : errors), (htmlResults ? htmlContent : string.Empty));
-
-                //        //Console.ResetColor();
-                //    }
-                //}
-                #endregion
-
                 if (result.StatusCode != HttpStatusCode.OK)
                 {
                     resultContent = await result.Content.ReadAsStringAsync();
@@ -254,23 +189,7 @@ namespace InRule.CICD.Helpers
                             errors1.AppendLine(">" + unsupportedError.feature.ToString());
                         }
                     }
-                    // Still need to stop processing
-                    //return errors.ToString();
 
-                    //if (returnPackage.unsupportedFeatures.Count > 0)
-                    //{
-                    //    //if (htmlResults)
-                    //    //    htmlContent += $"<br><b>Unsupported features converting ruleapp to Java jar</b><br>";
-
-                    //    errors1.AppendLine("*Unsupported features converting ruleapp to Java jar*");
-                    //    foreach (var noFeature in returnPackage.unsupportedFeatures)
-                    //    {
-                    //        if (htmlResults)
-                    //            htmlContent += $"<br>" + noFeature.feature + "<br>";
-
-                    //        errors1.AppendLine(noFeature.feature);
-                    //    }
-                    //}
                     if (htmlResults)
                         htmlContent += "</body></html>";
 
@@ -297,14 +216,10 @@ namespace InRule.CICD.Helpers
                     var saveToFileName = result.Content.Headers.ContentDisposition.FileName;
                     var filePath = Path.Combine(DestinationPath, saveToFileName);
 
-                    //Console.ForegroundColor = ConsoleColor.Green;
                     if (htmlResults)
                         htmlContent += $"<br>" + $"Packaging in Java complete. Saving the file to: {filePath}" + "<br>";
 
                     await NotificationHelper.NotifyAsync($"Packaging in Java complete. Saving the file to: {filePath}", Prefix, "Debug");
-                    //Console.ForegroundColor = ConsoleColor.Yellow;
-                    //SlackHelper.PostSimpleMessage(filePath);
-                    //Console.ResetColor();
 
                     var fileName = ruleAppDef.Name + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".jar";
 
@@ -363,7 +278,6 @@ namespace InRule.CICD.Helpers
                                 }
 
                                 var downloadLink = await BoxComHelper.UploadFile(fileName, filePath, uploadChannel);
-                                //var downloadGitHubLink = await GitHubHelper.UploadFileToRepo(reportContent, fileName + ".htm");
 
                                 if (htmlResults)
                                     htmlContent += $"<br>" + $"Java jar has been generated for {ruleAppDef.Name}. <a href=\"{downloadLink}\">Click here to download the Java jar file {fileName} from Box.com</a><br></body></html>";
@@ -403,14 +317,6 @@ namespace InRule.CICD.Helpers
                     }
 
                 }
-
-                //string url = "https://inrulechicago-my.sharepoint.com/personal/mdrumea_inrule_com";
-
-                ///// SharePoint Folder Relative Url
-                //string folderUrl = "";
-
-                //var fileUrl = OneDriveHelper.UploadRest(url, folderUrl, @"C:\Temp\BupaGlobalSchema.jar");
-                //SlackHelper.PostSimpleMessage(fileUrl);
             }
             catch (Exception ex)
             {

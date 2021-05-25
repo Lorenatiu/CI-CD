@@ -59,7 +59,7 @@ namespace InRule.CICD.Helpers
                     client.BaseAddress = new Uri(BaseAddress);
 
                     // Build up our request by reading in the rule application
-                    var ruleApplication = ruleApplicationRef;//.GetRuleApplicationDef();
+                    var ruleApplication = ruleApplicationRef;
                     var httpContent = new ByteArrayContent(Encoding.UTF8.GetBytes(ruleApplication.GetXml()));
                     requestContent.Add(httpContent, "ruleApplication", ruleApplication.Name + ".ruleapp");
 
@@ -260,8 +260,6 @@ namespace InRule.CICD.Helpers
                         await NotificationHelper.NotifyAsync("Error requesting compiled Rule Application: " + await result.Content.ReadAsStringAsync(), Prefix, "Debug");
                     else
                         Console.WriteLine("Error requesting compiled Rule Application.");
-
-                    //return null;
                 }
                 catch (Exception ex)
                 {

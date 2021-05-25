@@ -17,9 +17,11 @@ namespace CheckinRequestListener
     public class RuleApplicationParameterInspector : IParameterInspector
     {
         string CatalogEvents = SettingsManager.Get("CatalogEvents");
-        string FilterByUser = SettingsManager.Get("FilterEventsByUser").ToLower();
+        string FilterByUser = SettingsManager.Get("FilterEventsByUser");
         string ApplyLabelApprover = SettingsManager.Get("ApprovalFlow.ApplyLabelApprover");
         string ApplyLabelApprovalUri = SettingsManager.Get("ApprovalFlow.ApplyLabelApprovalUri");
+        string ApplyLabelFilterByLabels = SettingsManager.Get("ApprovalFlow.FilterByLabels");
+        string InRuleCICDServiceUri = SettingsManager.Get("InRuleCICDServiceUri");
 
         List<string> catalogEvents = new List<string>();
 
@@ -36,14 +38,16 @@ namespace CheckinRequestListener
                     dynamic thisEvent = new ExpandoObject();
                     thisEvent.RequestorUsername = input.SecurityHeader.Identity ?? (input.SecurityHeader.Impersonate ? "Impersonated" : "UNKNOWN");
 
-                    var filterByUsers = FilterByUser.Split(' ').ToList();
+                    var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
-                    if (!filterByUsers.Contains(thisEvent.RequestorUsername.ToString().ToLower()))
-                        return thisEvent;
+                    if (filterByUsers.Any(u => u.Length > 0) && input.GetType().Name != "ApplyLabelRequest")
+                        if (!filterByUsers.Contains(thisEvent.RequestorUsername.ToString().ToLower()))
+                            return thisEvent;
 
                     thisEvent.OperationName = operationName;
                     thisEvent.UtcTimestamp = DateTime.UtcNow;
                     thisEvent.RepositoryUri = System.ServiceModel.OperationContext.Current.RequestContext.RequestMessage.Headers.To.AbsoluteUri;
+                    thisEvent.RequiresApproval = false;
 
                     #region Assign request-specific data
                     // Future: Add cache of rule app guid/name, userId/name, roleId/name
@@ -54,12 +58,21 @@ namespace CheckinRequestListener
                     {
                         appDef = applyLabelRequest.AppDef;
                         thisEvent.Label = applyLabelRequest.Label;
-                        if (thisEvent.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
+
+                        if (!string.IsNullOrEmpty(ApplyLabelFilterByLabels))
                         {
-                            thisEvent.GUID = appDef.Guid;
-                            thisEvent.RuleAppRevision = appDef.Revision;
-                            InRuleEventHelper.ProcessEventAsync(thisEvent, string.Empty);
-                            throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                            var labels = ApplyLabelFilterByLabels.ToLower().Split(' ');
+
+                            if (labels.Contains(applyLabelRequest.Label.ToLower()))
+                                if (thisEvent.RequestorUsername.ToString().ToLower() != ApplyLabelApprover.ToLower())
+                                {
+                                    thisEvent.InRuleCICDServiceUri = InRuleCICDServiceUri;
+                                    thisEvent.RequiresApproval = true;
+                                    thisEvent.GUID = appDef.Guid;
+                                    thisEvent.RuleAppRevision = appDef.Revision;
+                                    InRuleEventHelper.ProcessEventAsync(thisEvent, string.Empty);
+                                    throw (new Exception($"\r\n\r\nUSER {thisEvent.RequestorUsername.ToString()} CANNOT APPLY LABEL WITHOUT AUTHORIZATION!  A REQUEST HAS BEEN SUBMITTED."));
+                                }
                         }
                     }
                     else if (input is CheckinRuleAppRequest checkingRuleAppRequest)
@@ -238,13 +251,11 @@ namespace CheckinRequestListener
                 try
                 {
                     var eventData = (dynamic)eventDataSource;
-                    //if (eventData.RequestorUsername.ToString().ToLower() != FilterByUser)
-                    //    return;
+                    var filterByUsers = FilterByUser.ToLower().Split(' ').ToList();
 
-                    var filterByUsers = FilterByUser.Split(' ').ToList();
-
-                    if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
-                        return;
+                    if (filterByUsers.Any(u => u.Length > 0) && returnValue.GetType().Name != "ApplyLabelRequest")
+                        if (!filterByUsers.Contains(eventData.RequestorUsername.ToString().ToLower()))
+                            return;
 
                     eventData.ProcessingTimeInMs = (DateTime.UtcNow - ((DateTime)eventData.UtcTimestamp)).TotalMilliseconds;
 

@@ -3,5 +3,10 @@
     "name": "ApprovalFlow.ApplyLabelApprover",
     "value": "admin",
     "slotSetting": false
+  },
+  {
+    "name": "ApprovalFlow.FilterByLabels",
+    "value": "LIVE",
+    "slotSetting": false
   }
 ]

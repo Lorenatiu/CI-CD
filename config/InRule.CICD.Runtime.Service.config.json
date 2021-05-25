@@ -15,6 +15,16 @@
     "slotSetting": false
   },
   {
+    "name": "ApprovalFlow.FilterByLabels",
+    "value": "LIVE",
+    "slotSetting": false
+  },
+  {
+    "name": "ApprovalFlow.RequesterNotificationChannel",
+    "value": "Slack Email",
+    "slotSetting": false
+  },
+  {
     "name": "ApprovalFlow.NotificationChannel",
     "value": "Slack",
     "slotSetting": false
@@ -121,7 +131,7 @@
   },
   {
     "name": "FilterEventsByUser",
-    "value": "admin",
+    "value": "",
     "slotSetting": false
   },
   {
@@ -147,11 +157,6 @@
   {
     "name": "GitHub.GitHubToken",
     "value": "",
-    "slotSetting": false
-  },
-  {
-    "name": "InRuleCICDServiceUri",
-    "value": "https://[service_to_update].azurewebsites.net/Service.svc/api",
     "slotSetting": false
   },
   {

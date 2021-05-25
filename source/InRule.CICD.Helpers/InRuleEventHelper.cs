@@ -83,7 +83,7 @@ namespace InRule.CICD.Helpers
                         }
                         else if (handler == "Email")
                         {
-                            await SendGridHelper.SendEventToEmailAsync(eventData.OperationName, eventData, handler, string.Empty);
+                            await SendGridHelper.SendEventToEmailAsync(eventData.OperationName, eventData, " - InRule Catalog Event", string.Empty);
                         }
                         else if (handlerType == InRuleEventHelperType.TestSuite)
                         {
@@ -166,9 +166,6 @@ namespace InRule.CICD.Helpers
                             {
                                 if (ruleAppDef.Revision > 1)
                                 {
-                                    //RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(eventData.RepositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
-                                    //var fromRuleAppDef = connection.GetSpecificRuleAppRevision(ruleAppDef.Guid, ruleAppDef.Revision - 1);
-
                                     var fromRuleAppDef = GetRuleAppDef(eventData.RepositoryUri.ToString(), ruleAppDef.Guid.ToString(), ruleAppDef.Revision - 1, string.Empty);
                                     if (fromRuleAppDef != null)
                                         await InRuleReportingHelper.GetRuleAppDiffReportAsync(eventData.OperationName, eventData, fromRuleAppDef, ruleAppDef);
@@ -185,14 +182,17 @@ namespace InRule.CICD.Helpers
                         }
                         else if (handlerType == InRuleEventHelperType.ApprovalFlow)
                         {
-                            eventData.ApprovalFlowMoniker = handler;
-                            eventData = (dynamic)eventDataSource;
-                            RuleApplicationDef ruleAppDef;
-                            if (!string.IsNullOrEmpty(ruleAppXml))
-                                ruleAppDef = RuleApplicationDef.LoadXml(ruleAppXml);
-                            else
-                                ruleAppDef = GetRuleAppDef(eventData.RepositoryUri.ToString(), eventData.GUID.ToString(), eventData.RuleAppRevision, eventData.OperationName);
-                            await CheckInApprovalHelper.SendApproveRequestAsync(eventDataSource, ruleAppDef, handler);
+                            if (eventData.RequiresApproval)
+                            {
+                                eventData.ApprovalFlowMoniker = handler;
+                                eventData = (dynamic)eventDataSource;
+                                RuleApplicationDef ruleAppDef;
+                                if (!string.IsNullOrEmpty(ruleAppXml))
+                                    ruleAppDef = RuleApplicationDef.LoadXml(ruleAppXml);
+                                else
+                                    ruleAppDef = GetRuleAppDef(eventData.RepositoryUri.ToString(), eventData.GUID.ToString(), eventData.RuleAppRevision, eventData.OperationName);
+                                await CheckInApprovalHelper.SendApproveRequestAsync(eventDataSource, ruleAppDef, handler);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -211,9 +211,6 @@ namespace InRule.CICD.Helpers
         {
             try
             {
-                //if (catalogEventName == "CheckinRuleApp" || catalogEventName == "OverwriteRuleApp" || catalogEventName == "CreateRuleApp")
-                //    revision++;
-
                 RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(catalogUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword"));
                 return connection.GetSpecificRuleAppRevision(new System.Guid(ruleAppGuid), revision);
             }
@@ -237,19 +234,5 @@ namespace InRule.CICD.Helpers
             }
             return null;
         }
-
-        //public static void WriteError(string message, string prefix)
-        //{
-        //    try
-        //    {
-        //        SlackHelper.PostMarkdownMessage(message, prefix + "ERROR - ");
-        //        Console.WriteLine(message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        EventLog.WriteEntry("Application", message + "\r\n\r\n" + ex.Message, EventLogEntryType.Error);
-        //    }
-        //    EventLog.WriteEntry("Application", message, EventLogEntryType.Error);
-        //}
     }
 }
