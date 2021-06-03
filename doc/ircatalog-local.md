@@ -15,7 +15,7 @@ This section applies when deploying only the CI/CD add-on components to an exist
 
 * Create a backup of the folder where irCatalog service was originally installed.  The default location is C:\Program Files (x86)\InRule\irServer\RepositoryService\IisService.
 * Download [InRule.Catalog.Service_Local.zip](..\releases\InRule.Catalog.Service_Local.zip) and unzip in a folder on the file system.
-* Copy the content of the bin folder to the existing ...\RepositoryService\IIisService\bin\ folder.
+* Copy the content of the bin folder to the existing ...\RepositoryService\IisService\bin\ folder.
 * Add the InRuleCICD.config file to the original root folder of the irCatalog service file system deployment.
 
    ![irCatalog folder](../images/InRuleCICD_irCatalogLocal.PNG)

@@ -6,7 +6,7 @@ _In contrast with Service Bus queues, in which each message is processed by a si
 
 _Service Bus topics and subscriptions enable you to scale to process a large number of messages across a large number of users and applications._
 
-**Before using InRule® CI/CD with Azure Service Bus topics, a number of items have to be first created under the Azure portal**, as per the steps described on page [Use the Azure portal to create a Service Bus topic and subscriptions to the topic](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal).  Depending on the specifics of the intented end-to-end solution, a subscription to the topic and further connected functionality would have to be created in Azure before leveraging the irCatalog service events. 
+**Before using InRule® CI/CD with Azure Service Bus topics, a number of items have to be first created under the Azure portal**, as per the steps described on page [Use the Azure portal to create a Service Bus topic and subscriptions to the topic](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal).  Depending on the specifics of the intended end-to-end solution, a subscription to the topic and further connected functionality would have to be created in Azure before leveraging the irCatalog service events. 
 
 For the InRule CI/CD configuration, we need the SB namespace connection string and the name of the topic just created.  
 

@@ -29,7 +29,7 @@ This is a [sample of minimal configuration](../config/InRuleCICD_Java.config) fo
 
 |Configuration Key | Comments
 --- | ---
-|Java.**JavaDistributionInPath**| The key provided by InRule for access to the Java dstribution service, coming with the specific license.
+|Java.**JavaDistributionInPath**| The key provided by InRule for access to the Java distribution service, coming with the specific license.
 |Java.**JavaDistributionUri**| The URI for the InRule Java distribution service.
 |Java.**JavaDistributionInPath**| The local folder used as the temporary location for the rule application file before being sent to the irDistribution service. For the Azure deployment with CI/CD service, this location is overridden with the default TEMP location for the app service.
 |Java.**JavaDistributionOutPath**| The local folder used as the temporary location for saving the generated Java JAR file before upload to either GitHub or Box.com. For the Azure deployment with CI/CD service, this location is overridden with the default TEMP location for the app service.

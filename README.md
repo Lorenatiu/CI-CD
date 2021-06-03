@@ -33,8 +33,8 @@ What is this and how does it work?  irCatalog emits many lifecycle events (check
     * Generate a **rule application report** for the rule application and revision that triggered the event.
     * Generate a **rule application difference report**, showing the changes between the previous revision and the revision that triggered the event, when at least two revisions are available.
     * Download existing **regression test suite files** from a designated GitHub or local file system location, run all available regression tests, and return the detailed results, including pass/fail status for each test and overall, as well as making the test results file available.
-    * Call the **JavaScript distribution service**, pass the rule application revision tha triggered the event, and return the corresponding JavaScript file or the list of issues that prevented the conversion.
-    *  Call the **Java distribution service**, pass the rule application revision tha triggered the event, and return the corresponding JAR file or the list of issues that prevented the conversion.
+    * Call the **JavaScript distribution service**, pass the rule application revision that triggered the event, and return the corresponding JavaScript file or the list of issues that prevented the conversion.
+    *  Call the **Java distribution service**, pass the rule application revision that triggered the event, and return the corresponding JAR file or the list of issues that prevented the conversion.
     * For the **Azure DevOps pipeline** event subscriber, the default installation contains a sample that triggers a pipeline running regression tests from test suite files available in GitHub or DevOps repository, against the rule application revision that triggered the event.  If all regression tests pass, then the pipeline provided promotes the revision to another InRule catalog, as defined in YAML files referenced by the DevOps pipeline.  
 
 

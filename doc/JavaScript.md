@@ -57,7 +57,7 @@ This is a [sample of minimal configuration](../config/InRuleCICD_JavaScript.conf
 
 |Configuration Key | Comments
 --- | ---
-|JavaScript.**JavaScriptDistributionApiKey**| The key provided by InRule for access to the JavaScript dstribution service, coming with the specific license.
+|JavaScript.**JavaScriptDistributionApiKey**| The key provided by InRule for access to the JavaScript distribution service, coming with the specific license.
 |JavaScript.**JavaScriptDistributionUri**| The URI for the InRule JavaScript distribution service.
 |JavaScript.**JavaScriptDistributionOutPath**| The local folder used as the temporary location for saving the generated JavaScript file before upload to either GitHub or Box.com. For the Azure deployment with CI/CD service, this location is overridden with the default TEMP location for the app service.
 |JavaScript.**NotificationChannel**| The channel(s) where normal notifications are sent.  Since this action must return a link to where the js file is located, or post the errors that prevented the conversion to JavaScript, it requires a decision for which channel(s) to use.  

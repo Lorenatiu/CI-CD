@@ -6,7 +6,7 @@ The main areas covered in configuration are:
 
 * Common settings for the client/service instance, like encryption and authentication keys, catalog credentials, and so on.
 * List of catalog events to which the CI/CD solution subscribes.
-* A section for event handlers mapped to the catalog events.  For each event to which we want to trigger actions, an entry is required, named using the prefix "On" followed by the event name.  The corresponding value is a space separated list of monkikers, each representing an action defined later in the configuration.
+* A section for event handlers mapped to the catalog events.  For each event to which we want to trigger actions, an entry is required, named using the prefix "On" followed by the event name.  The corresponding value is a space separated list of monikers, each representing an action defined later in the configuration.
 * The bulk of the configuration file is taken by the sections containing action definitions.  For example, some available actions are for the integration with Slack, Teams or for more involved processes like generating rule application reports.
 
 ---

@@ -50,7 +50,7 @@ This section applies to both deployment options: new irCatalog service with CI/C
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
 * Restart the app service and confirm that the irCatalog service works properly: browse to the URL in browser, open a rule application in irAuthor.
 
-* If the InRule CI/CD App Service was created before the creation of the irCatalog App Service, it is necessary to update the CI/CD App Service configuration with the credentials required for accessing irCatalog App Service.  This can be done by navigating to the CI/CD App Service in [Azure portal](https://portal.azure.com) and setting the value of the CatalogUsername and CatalogPassword parameters.  Make sure to includ "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
+* If the InRule CI/CD App Service was created before the creation of the irCatalog App Service, it is necessary to update the CI/CD App Service configuration with the credentials required for accessing irCatalog App Service.  This can be done by navigating to the CI/CD App Service in [Azure portal](https://portal.azure.com) and setting the value of the CatalogUsername and CatalogPassword parameters.  Make sure to include "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
 
     ```
     {

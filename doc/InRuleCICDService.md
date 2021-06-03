@@ -45,14 +45,14 @@ az webapp create --name WEB_APP_NAME --plan APP_SERVICE_PLAN_NAME --resource-gro
 ```
 
 ### Deploy package
-First, [download](https://github.com/InRule/InRuleCICD/tree/main/Deployment/releases) the latest irServer® Rule Execution Service package (`InRule.CICD.Runtime.Service.zip`) from GitHub. Then [deploy the zip file](https://docs.microsoft.com/en-us/azure/app-service/app-service-deploy-zip) package to the Web App with the [az webapp deployment source](https://docs.microsoft.com/en-us/cli/azure/webapp/deployment/source#az-webapp-deployment-source-config-zip) command:
+First, [download](../releases) the latest InRule CI/CD Service package (`InRule.CICD.Runtime.Service.zip`) from GitHub. Then [deploy the zip file](https://docs.microsoft.com/en-us/azure/app-service/app-service-deploy-zip) package to the Web App with the [az webapp deployment source](https://docs.microsoft.com/en-us/cli/azure/webapp/deployment/source#az-webapp-deployment-source-config-zip) command:
 ```powershell
 # Example: az webapp deployment source config-zip --name contoso-inrule-cicd-prod-wa --resource-group inrule-prod-rg --src InRule.CICD.Runtime.Service.zip
 az webapp deployment source config-zip --name WEB_APP_NAME --resource-group RESOURCE_GROUP_NAME --src FILE_PATH
 ```
 
 ### Upload valid license file
-In order for irServer Rule Execution Service to properly function, a valid license file must be uploaded to the web app. The simplest way to upload the license file is via FTP.
+In order for InRule CI/CD Service to properly function, a valid license file must be uploaded to the web app. The simplest way to upload the license file is via FTP.
 
 First, retrieve the FTP deployment profile (url and credentials) with the [az webapp deployment list-publishing-profiles](https://docs.microsoft.com/en-us/cli/azure/webapp/deployment#az-webapp-deployment-list-publishing-profiles) command and put the values into a variable:
 ```powershell
@@ -71,21 +71,21 @@ The service requires a set of key value pairs in order to function properly, lik
 
 For now, it is possible to [download the starter config file](../config/InRule.CICD.Runtime.Service.config.json), in the format that is accepted when updating the app service via the Azure portal, and edit it. The starter file has only a few keys enabled, enough to ensure the encryption of the communication with the catalog and have the service react to a number of catalog events with a Slack message. The Slack webhook URL would have to be replaced with the correct value needed to send messages to the channel chosen and configured by the user.
 
-For all the available actions, follow the corresponsing details available at the links below, which include how :
+For all the available actions, follow the corresponding details available at the links below, which include how :
 
-* [Understanding and using notifications](doc/Notifications.md)
-* [Slack integration](doc/InRuleCICD_Slack.md)
-* [Azure DevOps integration](doc/DevOps.md)
-* [Trigger a DevOps pipeline running regression tests and promoting rule application](devops)
-* [Azure Event Grid integration](doc/AzureEventGrid.md)
-* [Azure Service Bus integration](doc/AzureServiceBus.md)
-* [Generate Rule Application Report](doc/RuleAppReport.md)
-* [Generate Rule Application Difference Report](doc/RuleAppDiffReport.md)
-* [Generate Java Rule Application (JAR file) with irDistribution Service](doc/Java.md)
-* [Generate JavaScript Rule Application with irDistribution Service](doc/JavaScript.md)
-* [CI/CD Approval Flow](doc/ApprovalFlow.md)
+* [Understanding and using notifications](Notifications.md)
+* [Slack integration](InRuleCICD_Slack.md)
+* [Azure DevOps integration](DevOps.md)
+* [Trigger a DevOps pipeline running regression tests and promoting rule application](../devops)
+* [Azure Event Grid integration](AzureEventGrid.md)
+* [Azure Service Bus integration](AzureServiceBus.md)
+* [Generate Rule Application Report](RuleAppReport.md)
+* [Generate Rule Application Difference Report](RuleAppDiffReport.md)
+* [Generate Java Rule Application (JAR file) with irDistribution Service](Java.md)
+* [Generate JavaScript Rule Application with irDistribution Service](JavaScript.md)
+* [CI/CD Approval Flow](ApprovalFlow.md)
 
-The encryption being symmetric, the same key value must be set in the Azure catalog app service's configuration (**AesEncryptDecryptKey**). Similarly, an authentication key (**ApiKeyAuthentication.ApiKey**) is required to communication with the CI/CD service, which has to match the value set for the catalog service.
+The encryption being symmetric, the same key value must be set in the Azure catalog app service's configuration (**AesEncryptDecryptKey**). Similarly, an authentication key (**ApiKeyAuthentication.ApiKey**) is required to communicate with the CI/CD service, which has to match the value set for the catalog service.
 
 |Configuration Key | Comments
 --- | ---
@@ -106,7 +106,7 @@ Next, edit the json config files with all the pertinent configuration parameters
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn3.png)
 
-* If the InRule CI/CD App Service was created and configured after setting up the CI/CD components on the irCatalog App Service, it is necessary to update the irCatalog App Service configuration with the newly created InRule CI/CD App Service URI.  This can be done by navigating to the irCatalog App Service in [Azure portal](https://portal.azure.com) and setting the value of the InRuleCICDServiceUri parameter.  Make sure to includ "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
+* If the InRule CI/CD App Service was created and configured after setting up the CI/CD components on the irCatalog App Service, it is necessary to update the irCatalog App Service configuration with the newly created InRule CI/CD App Service URI.  This can be done by navigating to the irCatalog App Service in [Azure portal](https://portal.azure.com) and setting the value of the InRuleCICDServiceUri parameter.  Make sure to include "/Service.svc/api", like in the example below.  Saving the configuration and restarting the irCatalog App Service are required.
 
     ![Azure App Service Editor](../images/InRuleCICD_AzureAddOn4.png)
 

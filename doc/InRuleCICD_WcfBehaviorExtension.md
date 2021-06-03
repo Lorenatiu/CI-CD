@@ -1,6 +1,6 @@
 ### Configuring irCatalog WCF Service for the Event Listener
 
-In order to intercept irCatalog® service events, we created a component that must reside alongisde the other irCatalog binaries, in service's bin folder. Assembly CheckinRequestListener.dll comes with a number of dependent files and a corresponding configuration file that drives runtime behavior. Also, irCatalog service's web.config file requires a number of changes before the WCF behavor extension becomes active.
+In order to intercept irCatalog® service events, we created a component that must reside alongside the other irCatalog binaries, in service's bin folder. Assembly CheckinRequestListener.dll comes with a number of dependent files and a corresponding configuration file that drives runtime behavior. Also, irCatalog service's web.config file requires a number of changes before the WCF behavior extension becomes active.
 
 The InRule® irCatalog service is a Windows Communication Foundation (WCF) service application. It is possible to expand and modify its built-in behavior with custom behavior extension running alongside the standard WCF behavior elements.
 

@@ -2,7 +2,7 @@
 
 When integrating InRule with their applications, most InRule customers prefer to use labels for the method employed to retrieve the desired rule application version from the catalog.  There are obvious benefits over always using the latest revision or having to specify the exact revision number.  As a result, assigning a label to the just promoted rule application version from an environment to another, like from UAT to production, is the final step in enabling the promoted version.
 
-As a result, other than the rule application promotion itself, this action of applying the label is very important, because it can decide what rule are active in a production environment, hence affecting business crucial systems.  With the InRule CI/CD framework, we provide a way for intercepting the requests for label assignment to a rule application revision, making it subject to a human confirmation.
+As a result, other than the rule application promotion itself, this action of applying the label is very important, because it can decide what rules are active in a production environment, hence affecting business crucial systems.  With the InRule CI/CD framework, we provide a way for intercepting the requests for label assignment to a rule application revision, making it subject to a human confirmation.
 
 Since only check in events are tracked at this time with the CI/CD catalog poller, the approval flow is not available without the CI/CD listener components deployed to the catalog instance.
 
@@ -18,12 +18,12 @@ Only some catalog users get to be designated as approvers, leaving all others in
 
     ![Teams Requester Message](../images/InRuleCICD_label_requester_1.png)
 
-* At the same time, a message is sent to UserA ("admin" in the example), with the details of the action and a link that, once clicked, completes the action attempted by UserB and assigns the label to the intented revision.
+* At the same time, a message is sent to UserA ("admin" in the example), with the details of the action and a link that, once clicked, completes the action attempted by UserB and assigns the label to the intended revision.
 * The intended unapproved label does not get applied and, instead, a "PENDING xx" label is assigned to the rule application revision, where xx stands for the actual revision number.
 
     ![Slack Event 1](../images/InRuleCICD_label_request_1.png)
 
-* On approval, the "PENDING xx" label is replaced with the intended label in its assignemnt to the correct revision.  A confirmation message is sent to both UserA and UserB, action triggered along with any other actions set for OnApplyLabel event.
+* On approval, the "PENDING xx" label is replaced with the intended label in its assignment to the correct revision.  A confirmation message is sent to both UserA and UserB, action triggered along with any other actions set for OnApplyLabel event.
 
     **Slack**
     
