@@ -173,10 +173,11 @@ namespace InRule.CICD
                 using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(repositoryUri), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword")))
                 {
                     var ruleAppDef = connection.GetSpecificRuleAppRevision(new Guid(ruleAppGuid), int.Parse(revision));
+                    var tempLabel = $"PENDING {label} ({int.Parse(revision)})";
 
-                    if (connection.DoesLabelExist("PENDING " + int.Parse(revision).ToString()))
+                    if (connection.DoesLabelExist(tempLabel))
                     {
-                        connection.RemoveLabel(new Guid(ruleAppGuid), int.Parse(revision), "PENDING " + int.Parse(revision));
+                        connection.RemoveLabel(new Guid(ruleAppGuid), int.Parse(revision), tempLabel);
                         connection.ApplyLabel(ruleAppDef, label);
 
                         var requesterChannelsConfig = SettingsManager.Get($"{approvalFlowMoniker}.RequesterNotificationChannel");

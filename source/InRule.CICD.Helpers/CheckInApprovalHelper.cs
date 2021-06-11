@@ -34,7 +34,7 @@ namespace InRule.CICD.Helpers
                 {
                     using (RuleCatalogConnection connection = new RuleCatalogConnection(new Uri(eventData.RepositoryUri.ToString()), new TimeSpan(0, 10, 0), SettingsManager.Get("CatalogUsername"), SettingsManager.Get("CatalogPassword")))
                     {
-                        connection.ApplyLabel(ruleAppDef, "PENDING " + eventData.RuleAppRevision.ToString());
+                        connection.ApplyLabel(ruleAppDef, $"PENDING {eventData.Label} ({eventData.RuleAppRevision.ToString()})");
                     }
 
                     JavaScriptSerializer javaScriptSerializer = new JavaScriptSerializer();
